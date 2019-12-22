@@ -1,0 +1,66 @@
+%% Mẫu luận án tiến sĩ (thạc sĩ) theo style vietkey.luanan.1.2.cls - Version 1.2
+%% (c) Dang Minh Tuan, Vietkey Group.
+%% Tel: +84-98-868-6636, Email: tuanvietkey@gmail.com.
+%%
+%% History:
+%% - version 1.2 (2017/08/11)
+%% - Created on 2016/08/16.
+
+\documentclass[fontsize=13pt,oneside,a4paper,openany]{vietkey.luanan.1.2}
+
+%tham số firstinits=true để viết tắt, defernumbers để số thứ tự liền mạch.
+\usepackage[backend=bibtex,
+            bibstyle=luanan,
+            sorting=nyvt,
+            block=none,
+            %defernumbers=true,
+            babel=other]{biblatex}
+\usepackage{titling}
+\usepackage{setspace}
+\usepackage{fancyvrb}
+\usepackage{dirtytalk}
+\usepackage{listing}
+
+\addbibresource{../bibdmt.bib}                 %%% dữ liệu về tài liệu tham khảo.
+\begin{document}
+
+\include{trangbia}                          %%% có thể thay đổi
+
+\VKnumRoman                                 %%% đánh số bằng chữ cái i, ii...
+
+% \include{loicamdoan}                        %%% có thể thay đổi
+% \include{loicamon}                          %%% có thể thay đổi
+
+\input{abstract.tex}
+\VKmucLuc                                   %%% mục lục
+
+% \include{kyhieu}                            %%% có thể thay đổi
+
+\VKdanhMucHinhVe                            %%% danh mục hình vẽ
+\VKdanhMucBangBieu                          %%% danh mục bảng biểu
+%\VKdanhMucDinhLy
+%\VKdanhMucDinhNghia
+\lstlistoflistings
+\VKbatDaudanhSo                             %%% bắt đầu đánh số từ 1,2,3...
+
+% \include{loinoidau}                         %%% có thể thay đổi
+\input{chapters/introduction.tex}
+
+\chapter[Background]{Background}
+\input{chapters/operating_system.tex}
+\input{chapters/windows_internal.tex}
+\input{chapters/forensics.tex}
+
+\input{chapters/related_words.tex}
+\input{chapters/propose_method.tex}
+% \include{ketluan}                           %%% có thể thay đổi
+% \include{chdanhmuccongbo}                   %%% có thể thay đổi
+
+\VKngatTrang                                %%% ngắt trang để chuyển sang tài liệu tham khảo
+\VKtaiLieuThamKhao                          %%% tài liệu tham khảo
+\VKdanhSoPhuLuc                             %%% bắt đầu đánh số cho phụ lục
+
+% \include{phuluccaidat}                      %%% có thể thay đổi
+
+\end{document}
+

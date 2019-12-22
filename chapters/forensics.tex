@@ -1,0 +1,25 @@
+\section[Digital Forensics and memory forensics techniques]{Digital Forensics and memory forensics techniques}
+
+Digital forensics describes the process includes the collection and analyzation of evidence; information synthesization; and sometimes unknown binaries and files analysis. Digital forensics has become significant in the industry. People will turn into digital forensics companies when they notice or doubt one computer contains illegal files or malicious applications. Without digital forensics, we cannot traceback when an attack happens, and without prior learning of historical events, we can not build a more reliable system to detect and prevent future replicate attacks. We learn and build filters based on files signature\cite{yararules}. These signatures can be unknown from a Zero-day attack, and even a One-day attack can still harm the system. Digital forensics is gaining more and more important when the next generation of malware do not intend to break the system but to exploit the system computing power for profit or collect sensitive information. Most notably are Cryptocurrency Malware and Botnet; these types of malicious applications will run inside the system and uses little computations. Backdoors and trojans are another concern when they silently collect user's information, files and activities. We can only know of their existence when the attack had happened.
+
+\subsection[Evidence gathering]{Evidence gathering}
+
+Once we have identify the corrupted system, we must try to disconnect the machine from the internet. But if we disconnect the system from the internet, the malware will drop all connection and we will lose all traces. Hence, we must quickly dump the memory of the system and disconnect the machine from the internet. The memory dump will have these information:
+
+\begin{itemize}
+\item Currently running processes
+\item Currently opening files (file descriptor)
+\item Currently opening sockets
+\end{itemize}
+
+After acquisition of memory dump file, we use forensics tools and begin analysis. In the worst condition, where we must shutdown the system, we can try to collect the whole physical memory by using \textit{cold boot attack} \cite{coldboot}. This technique relies on memory data disolve slower on low temperature, enable us to shutdown and collect RAM data given physical access. Full RAM dump can easily be converted to dump file format to use with tools. After raw memory is gathered we will start analyzing. The two most notable tools for memory forensics are Google's Rekall platform, and the Open-source Volatility project. These two tools are used by most digital forensics teams.
+
+Next we will describe some technique on memory forensics.
+
+\subsection[KDBG scanning]{KDBG scanning}
+
+Scanning KDBG will provides some small but important piece of information. As described in Windows Internal, KDBG has a pointer to PsActiveProcessHead, which is a pointer to the doubly linked list of \texttt{\_EPROCESS}. Volatility used KDBG scanning to characterize Windows version before Windows 8. From Windows 8 forward, this structure is encoded and made a hindrance to Volatility users.
+
+\subsection[Pool tag scanning and quick scanning]{Pool tag scanning and quick scanning}
+
+Pool tag scanning is a technique to find structure by scanning the pool first introduced by Schuster \cite{pooltagscan} in 2006. By ultilizing the pool layout with \texttt{POOL\_HEADER}'s \texttt{POOL\_TAG}, we can scan for tags that contains a certain structure. Physical memory is getting larger and scanning the whole address space is not suitable anymore. In 2016, Sylve, Marziale and Richard \cite{sylve2016pool} has improved the algorithm for 64-bit Windows by using a global kernel variable indicating the start of dynamic allocation and a pointer to allocation bitmap (\texttt{MiNonPagedPoolStartAligned} and \texttt{MiDynamicBitMapNonPagedPool}).

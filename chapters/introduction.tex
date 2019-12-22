@@ -1,0 +1,50 @@
+\chapter[Introduction]{Introduction}
+
+In this chapter, we explain the definitions along with the current state of digital forensics and some contexts of today computer system and the current state we are in.
+
+Before we get into the proposal, we shall understand the following terminologies as written below:
+
+\begin{itemize}
+  \item \textbf{Hacker}.
+    Person who commits illegal activities to computer systems by exploiting bugs, or by writing illegal software that aims to damage or corrupt system, or by collecting sensitive, classified information.
+  \item \textbf{Malware}.
+    A type of computer software that does illegal activities such as stealing information; damaging or corrupting system; ransoming system owner; etc..
+  \item \textbf{Trojans}.
+    A type of computer software that collects computer information and activties without user's permission and/or acknowledgement.
+    A digital asset used in place of cash or banking money, hardened by cryptographic security.
+  \item \textbf{File signature}.
+    Data used to identify or verify the content of a file. Commonly bytes in file and file checksum.
+\end{itemize}
+
+\section[Motivation]{Motivation}
+
+Throughout the years of computer development, computers have become a standard method for humans around the world to study, work and entertain. Most activities of our daily lives involve computers. Individuals across the globe have created systems running on computers to assist them in doing from common to complex tasks. However, this somehow influenced other people to commit harmful activities. Hackers have been creating malware to damage systems and trojans to steal information. Furthermore, lately along with the trend of cryptocurrency, while ordinary people commit their investment by using crypto mining machines, hackers, on the other hand, create sophisticated malware (cryptojacking malware) that stealthily installed on a victim machine and mine cryptocurrency without the victim's acknowledgement.
+
+Security researchers have been struggling to find ways to mitigate the gaining rate of attacks. However, it was never close to perfection. We rely on file signature database for filtering and often miss out new one, thus, it is highly vulnerable to the new class of malware. To counterattack these new malware, we perform digital forensics when an attack happens. Digital forensics which as described by The Forensics Research Workshop I \cite{roadmap}:
+
+\say{The use of scientifically derived and proven methods toward the preservation, collection, validation, identification, analysis, interpretation, documentation and presentation of digital evidence derived from digital sources for the purpose of facilitating or furthering the reconstruction of events found to be criminal, or helping to anticipate unauthorized actions shown to be disruptive to planned operations.}
+
+% https://www.mcafee.com/enterprise/en-us/assets/infographics/infographic-threats-report-dec-2018.pdf
+% https://www.mcafee.com/enterprise/en-us/assets/reports/rp-quarterly-threats-aug-2019.pdf
+
+Digital forensics includes many different aspects, however, the most intrigued part of digital forensics is memory forensics, which "provides unprecedented visibility into the runtime state of the system, such as which processes were running, open network connections, and recently executed commands" as stated in the book The Art of Memory Forensics \cite{ligh2014art}. Not only can we get a frame of a computer state, but we can extract files and processes which was in the memory. Because we can extract in memory processes, we can extract a malware and learn about its behaviour from traces we found. After having the malware file, we can reverse engineer and create its signature which we will add back to our database.
+
+A malware is good only before it is discovered, therefore hackers creates malware hidden from the process explorer. We observe a few incidences recently found. Android malware that hid itself on user mobile and was only found September 2019 after 5 months on the wild \cite{hiddenMalwareAndroid}. The Titanium backdoor\footnote{Programs that open port for remote connections} on Windows 10 disclosed November 2019 \cite{titanium}. These malware often got picked up and analyze by researchers, a normal user would not always scan the system looking for mallicious process. For a normal user, if the anti-virus software cannot flag the file as mallicious, his computer will have malware running without knowning. To know whether a system is having a hidden malware running, we must extract the memory and send to an investigator to find out. Such process is complex, long and costly, a user must be able to extract the memory and hire an investigator to analyze. Another way is to do memory forensics live \footnote{when the system is still running} and automatically extract and send the hidden process binary to the researchers. Shuaibur Rahman and Khan \cite{reviewLive} has a review on Live forensics methods and approach in 2015, one standout paper is \cite{comparativeLive} that can find finished and cache\footnote{background running processes} processes. However, the paper only restricted to Linux OS. Others approaches mentioned uses memory acquisition technique to get the memory dump and perform analysis later.
+
+With Windows as the main OS to most desktop and a high level of malware targeting Windows, in our research we set the goal to do find hidden processes on a running Windows machine. The outcome of this project will be a small tool to search for and collect hidden processes and send the binary to the server.
+
+\section[Objectives]{Objectives}
+
+In the scope of this proposal, we wish to:
+
+\begin{itemize}
+  \item Understand the basics concept of OS that supports memory forensics.
+  \item Understand to some extend the internal of Windows operating system.
+  \item Understand some techniques often use for analyzing Windows memory dump.
+  \item Analyze some already exists tools support for memory forensics.
+  \item Propose a method to find hidden running processes in Windows.
+\end{itemize}
+
+\section[Structure]{Structure}
+
+% TODO

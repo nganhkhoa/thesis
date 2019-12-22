@@ -1,0 +1,116 @@
+%------------------------------------------------------------------------------------%
+%  style cho luan an tien si va luan van thac si cua 1 so truong dai hoc o Vietnam.  %
+%  Dang Minh Tuan, tuanvietkey@gmail.com, ver 1.2, 12-5-2016.                        %
+%------------------------------------------------------------------------------------%
+\ProvidesFile{luanan.bbx}
+\RequireBibliographyStyle{standard}
+\RequireBibliographyStyle{numeric}
+%\DeclareFieldFormat[article,incollection,unpublished]{title}{#1}
+%\DeclareFieldFormat[thesis]{title}{\mkbibemph{#1}}
+\renewcommand\labelnamepunct{\addcomma\space}
+\renewcommand\newblockpunct{\addcomma\space}
+\renewcommand\newunitpunct{\addcomma\space}
+% \DeclareBibliographyDriver{online}{%
+%   \usebibmacro{bibindex}%
+%   \usebibmacro{begentry}%
+%   \setunit{\labelnamepunct}\newblock
+%   \printfield{author}
+%   \newunit
+%   \usebibmacro{title}%
+%   \newunit\newblock
+%   \printfield{url}%
+% }
+\DeclareBibliographyDriver{article}{%
+  \usebibmacro{bibindex}%
+  \usebibmacro{begentry}%
+  \usebibmacro{author/translator+others}%
+  { (}\printfield{year}{)}
+  \setunit{\labelnamepunct}\newblock
+  \usebibmacro{title}%
+  \newunit
+  \printlist{language}%
+  \newunit\newblock
+  \usebibmacro{byauthor}%
+  \newunit\newblock
+  \usebibmacro{bytranslator+others}%
+  \newunit\newblock
+  \printfield{version}%
+  \newunit\newblock%
+  \usebibmacro{journal}%+volumes+series}%
+  \newunit\newblock%
+  \iffieldundef{volume}
+  {}
+  {\printfield{volume}}
+  \iffieldundef{number}
+  {}
+  {\printtext{(}\printfield{number}\printtext{)}}
+  \newunit
+  \usebibmacro{byeditor+others}%
+  \newunit
+  \usebibmacro{note+pages}%
+  \newunit\newblock
+  \iftoggle{bbx:isbn}
+    {\printfield{issn}}
+    {}%
+  \newunit\newblock
+  \usebibmacro{doi+eprint+url}%
+  \newunit\newblock
+  \usebibmacro{addendum+pubstate}%
+  \setunit{\bibpagerefpunct}\newblock
+  \usebibmacro{pageref}%
+  \usebibmacro{finentry}}
+\DeclareBibliographyDriver{book}{%
+  \usebibmacro{bibindex}%
+  \usebibmacro{begentry}%
+  \usebibmacro{author/editor+others/translator+others}%
+   %\newunit
+  { (}\printfield{year}{)}
+  \setunit{\labelnamepunct}\newblock
+  \usebibmacro{maintitle+title}%
+  \newunit
+  \printlist{language}%
+  \newunit\newblock
+  \usebibmacro{byauthor}%
+  \newunit\newblock
+  \usebibmacro{byeditor+others}%
+  \newunit\newblock
+  \printfield{edition}%
+  \newunit
+  \iffieldundef{maintitle}
+  {\printfield{volume}%
+  \printfield{part}}
+  {}%
+  \newunit
+  \printfield{volumes}%
+  \newunit\newblock
+  \usebibmacro{series+number}%
+  \newunit\newblock
+  \printfield{note}%
+  \newunit\newblock
+%  \usebibmacro{publisher+location+date}%
+  \newunit
+  \printlist{publisher}%
+  \newunit
+  \iflistundef{location}
+  {}
+  {\printlist{location}}
+  \newunit\newblock
+  \usebibmacro{chapter+pages}%
+  \newunit
+  \printfield{pagetotal}%
+  \newunit\newblock
+  \iftoggle{bbx:isbn}
+  {\printfield{isbn}}
+  {}%
+  \newunit\newblock
+  \usebibmacro{doi+eprint+url}%
+  \newunit\newblock
+  \usebibmacro{addendum+pubstate}%
+  \setunit{\bibpagerefpunct}\newblock
+  \usebibmacro{pageref}%
+  \newunit\newblock
+  \iftoggle{bbx:related}
+  {\usebibmacro{related:init}%
+  \usebibmacro{related}}
+  {}%
+  \usebibmacro{finentry}}

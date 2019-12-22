@@ -1,0 +1,45 @@
+\chapter[The proposed method]{The proposed method}
+
+With the pool tag scanning described above, we proposed a way to do it live. The steps are listed below for clarity:
+
+\begin{itemize}
+  \item Run a process in kernel mode
+  \item Find a chunk containing a structure of anything
+  \item Scanning the surrounding chunks for \texttt{\_EPROCESS} structures and send the raw structure bytes to user mode program
+  \item Deserialize the bytes using PDB
+  \item Collect information parsed from structure
+\end{itemize}
+
+Our program should have two parts, part that runs inside the kernel space, K, and part that run in user space, U. We will perform pool tag scanning with K and for every successful findings, K will send the structure as bytes to U. From that U will try to extract information by deserialize it.
+
+\section[Run a process in kernel mode]{Run a process in kernel mode}
+
+Because we are trying to find structures in kernel space, we should be able to get a handle to a memory section inside. Because accesing to kernel space is mostly restricted, we can only do that by wire-attaching the machine to another one or using a kernel mode driver. It is clearly that wiring should be the last resort, we focus on loading a kernel mode driver when the machine is running. There are many ways to do this, most easy of all is by calling the undocumented Windows API [\texttt{NtLoadDriver(PUNICODE\_STRING)}]. This API allows us to load a driver that has been registered in the registry at [\texttt{\textbackslash registry\textbackslash machine\textbackslash SYSTEM\textbackslash CurrentControlSet\textbackslash Services}] with the three keys:
+
+\begin{itemize}
+  \item ImagePath: the image path of the driver to be loaded
+  \item Start: enum specify when to start the driver, manualy or on boot
+  \item Type: enum specify the type of the driver/service
+\end{itemize}
+
+% Not sure
+% However to be able to run this requires the user to have a "Load and unload device drivers" policy enabled.
+
+We can write a kernel mode driver and our main program which will load the driver when we run. Or we can create a driver which is loaded on boot, such that when we run the main program we can communicate with the kernel. Both ways give us a process that runs in the kernel space. After gaining access to the kernel space, we will try to get an address of a chunk in pool.
+
+\section[Find a chunk containing a structure]{Find a chunk containing a structure}
+
+As we already know, kernel space is a range of virtual addresses and if we ever try to read an invalid address we will get a system error. This error is by design as kernel is very sensitive to bad memory access. We can get an address in pool by calling \texttt{ExAllocatePoolWithTag(POOL\_TYPE PoolType, SIZE\_T NumberOfBytes, ULONG Tag)}. The pool is a memory space consists of chunk aligning next to each other as described in section [2.2.], when we have a chunk inside, we can try to move the pointer up and down searching for valid \texttt{POOL\_HEADER} and \texttt{TAG}. We can ultilize time moving down by \texttt{sizeof(POOL\_HEADER) + BlockSize} and move up by using \texttt{PreviousBlockSize}.
+
+Using \texttt{BlockSize} field in \texttt{POOL\_HEADER} we can know the length of the data in this chunk. We now capture all raw bytes from the data section of the chunk and send back to user mode program. Drivers can communicate with each other regardless of the space it is currently running. When our user mode program receives the bytes we can start deserialize to get structure information.
+
+\section[Deserialize the bytes using PDB]{Deserialize the bytes using PDB}
+
+Windows structures change drastically over builds as Michael \cite{windowsKernelCharacterization} has proved us. Thus, \texttt{\_EPROCESS} can have different member, or offset to a member is changed across Windows builds. This, in turn, complicates debugging process of a kernel driver development. To resolve the problem, Windows uses PDB file, a kind of file containings build information of Windows. These files can be downloaded online and often used when debugging with Windbg (A Microsoft debugger). We will use these files to get the percise structure definition of \texttt{\_EPROCESS} of the current Windows build running the program.
+
+Parsing PDB file is not an easy task since there is no official definition of the file layout, however Windows did provide us a repository containing information about this file type, though incomplete \cite{microsoft-pdb}. Many open-sourced tools have been created to parse PDB files, we can create our own parser base on these. We need to get the PDB files for our library containing \texttt{\_EPROCESS} through the PDB files server of Microsoft. The PDB files server uses a different protocol than HTTP, so we must use either use Windbg or use a PDB-downloader tool created by rajkumar-rangaraj \cite{pdb-downloader}. We can resemble this project to download the required PDB file.
+
+\section[Collecting information]{Collecting information}
+
+After we have the PDB file parsed and get the correct structure for \texttt{\_EPROCESS}, we can collect useful information such as pid (\texttt{PVOID UniqueProcessId}), process create time (\texttt{LARGE\_INTEGER CreateTime}), file path (\texttt{UCHAR ImageFileName[16]}). After we collected all information from memory, we compare with a list of currently running process by traversing the \texttt{\_EPROCESS} by walking through \texttt{LIST\_ENTRY ActiveProcessLinks}. Should any item comes up as not match will be considered a hidden process.
+
