@@ -1,4 +1,29 @@
 \chapter[Related works]{Related works}
 
-\input{chapters/volatility.tex}
-\input{chapters/rekall.tex}
+\section[Volatility]{Volatility}
+
+Volatility \cite{volatility} is an open-sourced forensic tool first developed by Aaron Walters and Petroni. They created a tool called Volatool in 2000, later changed its name to Volatility, and by now, it has gained much popularity in the digital forensics world. This work combines years of digital research into a convenient and versatile tool. The Volatility organization also has a contest every year to help improve the tool. This tool allows forensics investigators to analyze a memory dump file of Windows, macOS and Linux. It is designed by plugins of different version of OS, including major, minor and build version. These plugins specify constant numbers, kernel structure definitions and other OS-related information.
+
+When provided a dump file and a command as an input, Volatility will parse the dump file and operate the command. For finding processes Volatility provides these command \textit{pslist}, \textit{psscan}, \textit{psxview}. \textit{pslist} will walk through the \texttt{PsActiveProcessHead} doubly linked list found in KDBG, while \textit{psscan} will do pool tag scanning. \textit{psxview} will compare the result of multiple commands with \textit{pslist} to find processes tries to hide from the system.
+
+\section[Rekall]{Rekall}
+
+Rekall \cite{rekall} is an "advanced forensic and incident response framework" created by Google. Rekall implements techniques in the field and also maintain as an open-source project. Rekall also supports Windows, macOS and Linux memory forensics. One part different from Volatility is that Rekall can do live analysis. Rekall can dump the current memory or load a driver to run analysis in the current system. It is a common practice for an investigator to connect to a machine remotely and do forensics using Rekall. Unlike the Volatility plugins system, Rekall uses debug information of OS vendor to find the correct data structure without having to manually write out and also works with rare OS version.
+
+For finding processes Rekall has command for listing processes and scanning the pool, \textit{pslist} and \textit{psscan}. Rekall can do live analysis when we provide \texttt{--live} to its cli\footnote{command line interface} argument. With this option enabled, Rekall will run a driver inside the system and we can apply command to analyze.
+
+\section[Memtriage]{Memtriage}
+
+Memtriage \cite{memtriage} is a tool by combining rekall driver and volatility tool to query live RAM artifacts. This works just like Volatility but for a live machine, however it may fail on Windows 10, the author of this tool has record the blue screen error on some Windows build.
+
+\section[Windows Sysinternal suite]{Windows Sysinternal suite}
+
+The Windows Sysinternal \cite{sysinternal} suite is a set of software for internal Windows monitoring and inspection. The suite not made for forensics, but some software inside can help investigators inspect the system to find malware. The two software that is often used are \texttt{process explorer} and \texttt{process monitor}. Process explorer will give a list of processes, for each process, the software list threads running inside. Process explorer also send file checksum to VirusTotal for checking signature online.
+
+We were not able to find any evidence whether process explorer is able to find hidden process. However Process monitor will log activities like file IO, networking, etc. If a hidden process does any activities that is logged by Process monitor, we can see the process in the window.
+
+\section[Overview]{Overview}
+
+Even there are many related works, all works require people with experience in forensics to use. For Volatility even with a versatile tool set, Volatility cannot work live out of the box. Rekall project can do live forensics but the project is stagnant, no commit to the Rekall project since March 2019 inspite of having arround 180 issues opened in December 2019. Memtriage does live memory forensics but fail to work on Windows 10.
+
+As the target we set is a tool for normal user and work on Windows 10, none of the above works meets our target. But these projects influenced our research. In the next chapter we will discuss about the proposed method.

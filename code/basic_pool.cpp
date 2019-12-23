@@ -33,7 +33,9 @@ PPOOL alloc(unsigned int size, int32_t tag) {
       PPOOL p = new _POOL{actual_size, &POOL_BITMAP[0], tag};
       writePoolHeader(p);
       CHUNKS.push_back(p);
-      PPOOL pp = new _POOL{MAX_POOL - actual_size, &POOL_BITMAP[size], 0, size};
+      PPOOL pp = new _POOL{MAX_POOL - actual_size,
+                           &POOL_BITMAP[size],
+                           0, size};
       CHUNKS.push_back(pp);
       return p;
     }
