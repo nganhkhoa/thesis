@@ -1,7 +1,5 @@
 #include<vector>
-
 using std::vector;
-
 typedef struct POOL {
   int size;
   char* const location;
@@ -15,11 +13,8 @@ vector<PPOOL> CHUNKS;
 
 void write(PPOOL p, unsigned int size, void* data) {
   char* d = (char*)data;
-  if (size > p->size)
-    return;
-  for (int i = 0; i < size; i++) {
-    p->location[i] = d[i];
-  }
+  if (size > p->size) return;
+  for (int i = 0; i < size; i++) p->location[i] = d[i];
 }
 
 void writePoolHeader(PPOOL p) {
@@ -42,7 +37,6 @@ PPOOL alloc(unsigned int size, int32_t tag) {
     return nullptr;
   }
   PPOOL lastChunk = CHUNKS.back();
-  // split lastChunk in two
   PPOOL newChunk = new _POOL{lastChunk->size - actual_size,
                              lastChunk->location + size,
                              0, size};
@@ -51,4 +45,3 @@ PPOOL alloc(unsigned int size, int32_t tag) {
   CHUNKS.push_back(newChunk);
   return lastChunk;
 }
-

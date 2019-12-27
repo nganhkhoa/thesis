@@ -134,7 +134,16 @@
 \newcommand\HRule{\rule{\textwidth}{1pt}}
 
 %\usepackage[utf8]{inputenc, vietnam}
-%\setlist[enumerate]{itemsep=0mm}
+% \setlist[enumerate]{itemsep=-0.5em}
+
+\let\tempone\itemize
+\let\temptwo\enditemize
+\renewenvironment{itemize}{\tempone\addtolength{\itemsep}{-0.5em}}{\temptwo}
+\setlist[itemize]{itemsep=-0.5em,topsep=3pt}
+\renewenvironment{itemize}{\linespread{1}\tempone}{\temptwo\linespread{1.45}}
+
+\setenumerate{itemsep=-1pt,topsep=3pt}
+
 %
 %\tcbuselibrary{theorems}
 %
@@ -191,6 +200,7 @@
 \listfiles
 \makeatletter
 
+\PassOptionsToPackage{hyphens}{url}
 \RequirePackage[
 %unicode=true
 % Some remarks:
@@ -233,18 +243,18 @@ bookmarksnumbered,
 \newcommand*{\myeq}{\mathop{\overset{\MyDef}{\resizebox{\widthof{\eqdefU}}{\heightof{=}}{=}}}}
 
 \RequirePackage[titles]{tocloft} % tùy biến mục lục các chương, mục
-\setlength\cftchapnumwidth{7em}
+\setlength\cftchapnumwidth{8em}
 \renewcommand\cftchappresnum{CHAPTER~}
 \renewcommand{\cftchapaftersnum}{.}
 %\renewcommand{\cftappendixpresnum}{PHỤ LỤC\space}
-\renewcommand{\cfttoctitlefont}{\bfseries \large \hfil}
+% \renewcommand{\cfttoctitlefont}{\bfseries \large \hfil}
 %\renewcommand{\cftlottitlefont}{\hfill\Large}
-\renewcommand{\cftloftitlefont}{\bfseries \large \hfil}
+% \renewcommand{\cftloftitlefont}{\bfseries \large \hfil}
 
 \makeatletter
 \g@addto@macro\appendix{%
     \addtocontents{toc}{%
-        \protect\renewcommand{\protect\cftchappresnum}{PHU LUC}%
+        \protect\renewcommand{\protect\cftchappresnum}{GLOSSARY}%
     }%
 }
 \makeatother
@@ -294,11 +304,13 @@ textfont=it]{caption}  % định dạng tiêu đề hình ảnh bảng biểu
 \fancyheadoffset{0cm}
 \renewcommand{\headrulewidth}{0pt}
 \renewcommand{\footrulewidth}{0pt}
-\fancyhead[C]{\thepage}
-\fancypagestyle{plain}{%
-    \fancyhf{}%
-    \fancyhead[C]{\thepage}%
+\fancyfoot[RO,LE]{\small\thepage}
+\fancypagestyle{plain}{
+    \fancyhf{}
+    \fancyfoot[RO,LE]{\small\thepage}
 }
+% \fancyhead[LO]{\small Chapter \thechapter. \chaptermark}
+% \fancyhead[RE]{\small Ho Chi Minh City University of Technology}
 
 %\usepackage{etoolbox} % dùng để tùy biến patch những nơi không có lệnh renewcommand.
 
@@ -323,6 +335,7 @@ textfont=it]{caption}  % định dạng tiêu đề hình ảnh bảng biểu
 
 \RequirePackage[backend=bibtex,
                 bibstyle=luanan,
+                % style=ieee,
                 sorting=nyvt,
                 block=none,
                 %defernumbers=true,
@@ -385,11 +398,11 @@ textfont=it]{caption}  % định dạng tiêu đề hình ảnh bảng biểu
 }
 
 \newcommand\VKdanhMucListings{
-    \renewcommand{\lstlistoflistings}{List of Listings}
+    % \renewcommand{\lstlistoflistings}{List of Listings}
     \addcontentsline{toc}{section}{{\bf LIST OF LISTINGS\rm }}
-    %\let\oldnumberline\numberline%
-    %\renewcommand{\numberline}{Định nghĩa~\oldnumberline}%
-    \listoftheorems
+    \let\oldnumberline\numberline%
+    \renewcommand{\numberline}{Listing.~\oldnumberline}%
+    \lstlistoflistings
 }
 
 \newcommand\VKbatDaudanhSo{
@@ -399,12 +412,13 @@ textfont=it]{caption}  % định dạng tiêu đề hình ảnh bảng biểu
 }
 
 \newcommand\VKtaiLieuThamKhao{
-    \chapter*{Bibliography}%
+    % \chapter*{Bibliography}%
     \addcontentsline{toc}{chapter}{{\bf BIBLIOGRAPHY}}
 
-    \titleformat{\chapter}{\bfseries  \large}{CHAPTER \thechapter. }{}{}[]
-    \titlespacing{\chapter}{0.1em}{0.1em}{1.1em}
+    % \titleformat{\chapter}{\bfseries  \large}{CHAPTER \thechapter. }{}{}[]
+    % \titlespacing{\chapter}{0.1em}{0.1em}{1.1em}
 
+    % \bibliographystyle{ieeetran}
     % \bibliographystyle{unsrt}
     % \printbibliography[keyword={Vietnam},heading=subbibliography,title={Vietnamese:}]
     \printbibliography % [heading=subbibliography] % ,title={English:}
@@ -422,3 +436,35 @@ textfont=it]{caption}  % định dạng tiêu đề hình ảnh bảng biểu
     \setcounter{page}{1}
 }
 
+\newcommand\blankpage{% comando pagina vuota
+    \clearpage
+    \begingroup
+      \null
+      \thispagestyle{empty}%
+      \addtocounter{page}{-1}%
+      \hypersetup{pageanchor=false}%
+      \clearpage
+    \endgroup
+}
+
+% \def\@makechapterhead#1{%
+%    \vspace*{50\p@}%
+%    {\parindent \z@ \raggedright \normalfont
+%      \ifnum \c@secnumdepth >\m@ne
+%          \huge\bfseries \@chapapp\space \thechapter
+%          \par\nobreak
+%          \vskip 20\p@
+%      \fi
+%      \interlinepenalty\@M
+%      \Huge \bfseries #1\par\nobreak
+%      \vskip 40\p@
+%    }}
+%
+% \def\@makeschapterhead#1{%
+%    \vspace*{50\p@}%
+%    {\parindent \z@ \raggedright
+%      \normalfont
+%      \interlinepenalty\@M
+%      \Huge \bfseries  #1\par\nobreak
+%      \vskip 40\p@
+%    }}

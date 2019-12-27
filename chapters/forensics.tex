@@ -4,23 +4,26 @@ Digital forensics describes the process includes the collection and analyzation 
 
 \subsection[Evidence gathering]{Evidence gathering}
 
-Once we have identify the corrupted system, we must try to disconnect the machine from the internet. But if we disconnect the system from the internet, the malware will drop all connection and we will lose all traces. Hence, we must quickly dump the memory of the system and disconnect the machine from the internet. The memory dump will have these information:
+Once we have identified the corrupted system, we must try to disconnect the machine from the internet. However, if we disconnect the system from the internet, the malware will drop all connection, and we will lose all traces. Hence, we must quickly dump the memory of the system and disconnect the machine from the internet. An investigator can collect the information below from a memory dump.
 
 \begin{itemize}
+% \setlength\itemsep{-0.5em}
 \item Currently running processes
 \item Currently opening files (file descriptor)
 \item Currently opening sockets
 \end{itemize}
 
-After acquisition of memory dump file, we use forensics tools and begin analysis. In the worst condition, where we must shutdown the system, we can try to collect the whole physical memory by using \textit{cold boot attack} \cite{coldboot}. This technique relies on memory data disolve slower on low temperature, enable us to shutdown and collect RAM data given physical access. Full RAM dump can easily be converted to dump file format to use with tools. After raw memory is gathered we will start analyzing. The two most notable tools for memory forensics are Google's Rekall platform, and the Open-source Volatility project. These two tools are used by most digital forensics teams.
-
-Next we will describe some technique on memory forensics.
+After memory dump file acquisition, we use forensics tools and begin analysis. In the worst condition, where we must shut down the system, we can try to collect the whole physical memory by using \textit{cold boot attack} \cite{coldboot}. This technique relies on memory data dissolve slower on low temperature, enable us to shut down and collect RAM data given physical access. Full RAM dump can easily be converted to dump file format to use with tools. After raw memory is gathered, we will start analyzing. The two go-to tools for memory forensics are Google's Rekall platform and the open-source Volatility project. Most digital forensics individuals and teams use these two tools. Next, we will describe some techniques on memory forensics.
 
 \subsection[KDBG scanning]{KDBG scanning}
 
-Scanning KDBG will provides some small but important piece of information. As described in Windows Internal, KDBG has a member \texttt{PsActiveProcessHead}, which is a pointer to the doubly linked list of \texttt{\_EPROCESS}. Volatility used KDBG scanning to characterize Windows version before Windows 8. From Windows 8 forward, this structure is encoded and made a hindrance to Volatility users.
+Scanning KDBG will provide some small but important piece of information. As described in Section ~\ref{sec:kdbg}, KDBG has a member \texttt{PsActiveProcessHead}, which is a pointer to the doubly linked list of \texttt{\_EPROCESS}. Volatility used KDBG scanning to characterize Windows version before Windows 8. From Windows 8 forward, this structure is encoded and made a hindrance to Volatility users \cite{kdbgEncoded}.
+
+\say{An encoded KDBG can have a hugely negative effect on your ability to perform memory forensics. This structure contains a lot of critical details about the system, including the pointers to the start of the lists of active processes and loaded kernel modules, the address of the PspCid handle table, the ranges for the paged and non-paged pools, etc. If all of these fields are encoded, your day becomes that much more difficult.}
+
+While users of Volatility will suffer a bad day, Rekall's users do not as Rekall uses another method without the knowledge of KDBG structure \cite{rekallOnKDBGEncoding}. However, KDBG is still a critical Windows structure that provides kernel information and still being used to get general information of Windows out of a dump file.
 
 \subsection[Pool tag scanning and quick scanning]{Pool tag scanning and quick scanning}
 \label{sec:pooltagscanning}
 
-Pool tag scanning is a technique to find structure by scanning the pool first introduced by Schuster \cite{pooltagscan} in 2006. By ultilizing the pool layout with \texttt{POOL\_HEADER}'s \texttt{POOL\_TAG}, we can scan for tags that contains a certain structure. Physical memory is getting larger and scanning the whole address space is not suitable anymore. In 2016, Sylve, Marziale and Richard \cite{sylve2016pool} has improved the algorithm for 64-bit Windows by using a global kernel variable indicating the start of dynamic allocation and a pointer to allocation bitmap (\texttt{MiNonPagedPoolStartAligned} and \texttt{MiDynamicBitMapNonPagedPool}). These days, pool tag scanning is still being used to identify hidden processes.
+Pool tag scanning was first introduced by Schuster \cite{pooltagscan} in 2006. By utilizing the pool layout with \texttt{POOL\_HEADER}'s \texttt{POOL\_TAG}, scanning for tags that contain a certain structure is possible. With the larger physical memory in these recent years, scanning the whole address space will soon unsuitable. In 2016, Sylve, Marziale and Richard \cite{sylve2016pool} has improved the algorithm for 64-bit Windows by using a global kernel variable indicating the start of dynamic allocation of the pool \texttt{MiNonPagedPoolStartAligned} and a pointer to the allocation bitmap \texttt{MiDynamicBitMapNonPagedPool}. Their work has been proven to be much faster and work effectively on huge memory. Even today, pool tag scanning is still being used often to identify structure not found by the kernel structure indexing. Thus, pool tag scanning is used to search for hidden processes by finding \texttt{\_EPROCESS} that are not found by traversing the list of \texttt{\_EPROCESS}.

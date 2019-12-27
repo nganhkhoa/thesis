@@ -8,22 +8,22 @@ When provided a dump file and a command as an input, Volatility will parse the d
 
 \section[Rekall]{Rekall}
 
-Rekall \cite{rekall} is an "advanced forensic and incident response framework" created by Google. Rekall implements techniques in the field and also maintain as an open-source project. Rekall also supports Windows, macOS and Linux memory forensics. One part different from Volatility is that Rekall can do live analysis. Rekall can dump the current memory or load a driver to run analysis in the current system. It is a common practice for an investigator to connect to a machine remotely and do forensics using Rekall. Unlike the Volatility plugins system, Rekall uses debug information of OS vendor to find the correct data structure without having to manually write out and also works with rare OS version.
+Rekall \cite{rekall} is an ``advanced forensic and incident response framework'' created by Google. Rekall implements techniques in the field and also maintain as an open-source project. Rekall also supports Windows, macOS and Linux memory forensics. One part different from Volatility is that Rekall can do live analysis. Rekall can dump the current memory or load a driver to run analysis in the current system. It is a common practice for an investigator to connect to a machine remotely and do forensics using Rekall. Unlike the Volatility plugins system, Rekall uses debug information of OS vendor to find the correct data structure without having to write out and also works with rare OS version manually.
 
-For finding processes Rekall has command for listing processes and scanning the pool, \textit{pslist} and \textit{psscan}. Rekall can do live analysis when we provide \texttt{--live} to its cli\footnote{command line interface} argument. With this option enabled, Rekall will run a driver inside the system and we can apply command to analyze.
+For finding processes Rekall has commands for listing processes and scanning the pool, \textit{pslist} and \textit{psscan}. Rekall can do live analysis when we provide \texttt{--live} to its CLI argument. With this option enabled, Rekall will run a driver inside the system, and we can apply the command to analyze.
 
 \section[Memtriage]{Memtriage}
 
-Memtriage \cite{memtriage} is a tool by combining rekall driver and volatility tool to query live RAM artifacts. This works just like Volatility but for a live machine, however it may fail on Windows 10, the author of this tool has record the blue screen error on some Windows build.
+Memtriage \cite{memtriage} is a tool combining Rekall driver and Volatility tool to query live RAM artefacts. This tool works for a live machine. However, it may fail on Windows 10. The author of this tool has recorded the blue screen errors on some Windows 10 builds.
 
-\section[Windows Sysinternal suite]{Windows Sysinternal suite}
+\section[Windows SysInternal suite]{Windows SysInternal suite}
 
-The Windows Sysinternal \cite{sysinternal} suite is a set of software for internal Windows monitoring and inspection. The suite not made for forensics, but some software inside can help investigators inspect the system to find malware. The two software that is often used are \texttt{process explorer} and \texttt{process monitor}. Process explorer will give a list of processes, for each process, the software list threads running inside. Process explorer also send file checksum to VirusTotal for checking signature online.
+The Windows SysInternals \cite{sysinternal} suite is a set of software for internal Windows monitoring and inspection. The suite not made for forensics, but some software inside can help investigators inspect the system to find malware. The two software \textit{process explorer} and \textit{process monitor} are used often. Process explorer will give a list of processes, for each process, the software list threads running inside. \textit{process explorer} also sends file checksum to VirusTotal for checking signature online.
 
-We were not able to find any evidence whether process explorer is able to find hidden process. However Process monitor will log activities like file IO, networking, etc. If a hidden process does any activities that is logged by Process monitor, we can see the process in the window.
+We were not able to find any evidence whether \textit{process explorer} can find hidden process. However, \textit{process monitor} will log activities such as the file I/O, networking. If a hidden process does any activities that is logged by \textit{process monitor}, we can see the process in the log.
 
 \section[Overview]{Overview}
 
-Even there are many related works, all works require people with experience in forensics to use. For Volatility even with a versatile tool set, Volatility cannot work live out of the box. Rekall project can do live forensics but the project is stagnant, no commit to the Rekall project since March 2019 inspite of having arround 180 issues opened in December 2019. Memtriage does live memory forensics but fail to work on Windows 10.
+Even there are many related works, all of which require people with experience in forensics to use. For Volatility, even with a versatile toolset, it cannot work live out of the box. Rekall project can do live forensics, but the project is stagnant. There has been no commitment to the Rekall project since March 2019 despite having around 180 issues opened in December 2019. Memtriage does live memory forensics but fail to work on Windows 10.
 
-As the target we set is a tool for normal user and work on Windows 10, none of the above works meets our target. But these projects influenced our research. In the next chapter we will discuss about the proposed method.
+As the target we set is a tool for the average user and work on Windows 10, none of the above works meets our target. However, these projects influenced our research. In the next chapter, we will discuss the proposed method.

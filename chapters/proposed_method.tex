@@ -1,10 +1,8 @@
 \chapter[The proposed method]{The proposed method}
 
-\section[The steps]{the steps}
+With the pool tag scanning described in Section \ref{sec:pooltagscanning}, we proposed a way to do it live. The steps are listed below for clarity:
 
-With the pool tag scanning described in section \ref{sec:pooltagscanning}, we proposed a way to do it live. The steps are listed below for clarity:
-
-\begin{enumerate} % [label={Step \arabic.*}]
+\begin{enumerate}[label={Step \arabic*. },leftmargin=4\parindent]
   \item Run a controlled driver in kernel space
   \item Perform pool tag scanning
   \item Deserialize the bytes to get processes information
@@ -13,50 +11,69 @@ With the pool tag scanning described in section \ref{sec:pooltagscanning}, we pr
 
 Our program should have two parts, part that runs inside the kernel space, \texttt{K}, and part that run in user space, \texttt{U}. We will perform pool tag scanning with \texttt{K} and for every successful findings, \texttt{K} will send the structure as bytes to \texttt{U}. From that \texttt{U} will try to extract information by deserialize the bytes to a defined structure.
 
-\subsection[Run a controlled driver in kernel space]{Run a controlled edriver in kernel space}
+\section[Run a controlled driver in kernel space]{Run a controlled edriver in kernel space}
 
-Our tool needs a process, which is a kernel driver in this case, in order to gain access to the kernel space. The kernel driver can be loaded while booting the machine or by calling the undocumented Windows API -- \texttt{NtLoadDriver(PUNICODE RegistryPath)}. Both ways need a key that is registered at a specfic path in the Windows registry, \texttt{\textbackslash registry\textbackslash machine\textbackslash SYSTEM\textbackslash CurrentControlSet\textbackslash Services}. The key must have three values:
+Our tool needs a process, which is a kernel driver in this case, in order to gain access to the kernel space. The kernel driver can be loaded while booting the machine or by calling the undocumented Windows API -- \texttt{NtLoadDriver(PUNICODE RegistryPath)}. Both ways need a key that is registered at a specific path in the Windows registry, \texttt{\textbackslash registry\textbackslash machine\textbackslash SYSTEM\textbackslash CurrentControlSet\textbackslash Services}. The key must have three values:
 
 \begin{itemize}
+% \setlength\itemsep{-0.5em}
   \item \texttt{ImagePath}: the path of the driver to be loaded,
   \item \texttt{Start}: an enumeration specifing when to start the driver, manually or on boot,
-  \item \texttt{Type} an enumeration specifing the type of the driver.
+  \item \texttt{Type}: an enumeration specifing the type of the driver.
 \end{itemize}
 
-To load the driver, the \texttt{Start} value should be \texttt{2} for automatically start and \texttt{3} for manually start. The \texttt{Type} value should be \texttt{1} for specifiying the driver is in the type of kernel device. Once the driver is loaded and run, we have permission in the kernel space.
+To load the driver, the \texttt{Start} value should be \texttt{2} for automatically start and \texttt{3} for manually start. The \texttt{Type} value should be \texttt{1} for specifying the driver is in the type of kernel device. Once the driver is loaded and run, we have permission in the kernel space.
 
-\subsection[Perform pool tag scanning]{Perform pool tag scanning}
+\section[Perform pool tag scanning]{Perform pool tag scanning}
 
-To perform pool tag scanning, a pointer to an address in the non-paged pool is required. Calling an allocation will return a pointer to a chunk pool. The API to allocation is \texttt{ExAllocatePoolWithTag(POOL\_TYPE PoolType, SIZE\_T NumberOfBytes, ULONG Tag)}. By calling the function with \texttt{PoolType = NonPagedPool}, a pointer inside the non-paged pool will be returned. Using this pointer to scan the pool by the given algorithm, for each positive hit of \texttt{\_EPROCESS}, the driver will send the bytes of the structure to the user space process \texttt{U}. Continue scanning to get all the structures in the pool.
+Performing pool tag scanning for hidden processes requires a pointer to an address in the non-paged pool. Calling an allocation through \texttt{ExAllocatePoolWithTag(POOL\_TYPE PoolType, SIZE\_T NumberOfBytes, ULONG Tag)} will return a pointer to a chunk pool. By calling the function with \texttt{PoolType = NonPagedPool}, a pointer inside the non-paged pool will be returned. Using this pointer to scan the pool by the given algorithm, for each positive hit of \texttt{\_EPROCESS}, the driver will send the bytes of the structure to the user space process \texttt{U}. Continue scanning to get all the structures in the pool.
 
-\subsection[Deserialize the bytes to get processes information]{Deserialize the bytes to get processes information}
+\section[Deserialize the bytes to get processes information]{Deserialize the bytes to get processes information}
 
-After we haved collected the raw bytes, they need to be deserialized to their correct structure based on Windows build. The Windows kernel structures change drastically over every builds \cite{windowsKernelCharacterization}. Thus, \texttt{\_EPROCESS} layout is not fixed across Windows builds. Kernel structure layout is important for driver developers, so Windows has a file to record these structures layout and distributed with every Windows builds. Those files are called PDB (program database). Windbg, the Microsoft debugger, and Visual Studio both use these file for debugging purposes. Microsoft hosts these files at \url{https://msdl.microsoft.com/download/symbols}, however, the download protocol is not HTTP. To download these files, one may need to use Windbg. Another option is to use \textit{pdb-downloader} by Rajkumar Rangaraj \cite{pdb-downloader}, the code is open-source and written in \textit{C\#}. The protocol can be understand through the code and re-implement to fit our needs.
+After we have collected the raw bytes, they need to be deserialized to their correct structure based on Windows build. The Windows kernel structures change drastically over every builds \cite{windowsKernelCharacterization}. Thus, \texttt{\_EPROCESS} layout is not fixed across Windows builds. Kernel structure layout is important for driver developers, so Windows has a file to record these structures layout and distributed with every Windows builds. Those files are called PDB (program database). Windbg, the Microsoft debugger, and Visual Studio both use these file for debugging purposes. Microsoft hosts these files at \url{https://msdl.microsoft.com/download/symbols}. However, the download protocol is not HTTP. To download these files, one may need to use Windbg. Another option is to use \textit{pdb-downloader} by Rajkumar Rangaraj \cite{pdb-downloader}, the code is open-source and written in \textit{C\#}. The protocol can be understood through the code and re-implement to fit our needs.
 
-The PDB files are now available, but, the file is not parsable now. The file format is not officially documented, Microsoft only gave the community an incomplete repository containing the PDB file information \cite{microsoft-pdb}. Fortunately, community over time have written many parsers, from these open-source parser, we can use to parse the PDB files and get \texttt{\_EPROCESS} structure definition. With the correct \texttt{\_EPROCESS} definition, the bytes will be deserialized in order to get information from the bytes. The information are the process identify number (proess id), the process create and exit time, and the file path. The information can be retrieved from these members of \texttt{\_EPROCESS}:
+The PDB files are now available, but, the file is not parsable now. The file format is not officially documented, Microsoft only gave the community an incomplete repository containing the PDB file information \cite{microsoft-pdb}. Fortunately, community over time have written many parsers, from these open-source parser, we can use to parse the PDB files and get \texttt{\_EPROCESS} structure definition. With the correct \texttt{\_EPROCESS} definition, the bytes will be deserialized in order to get information from the bytes. The information are the process identification number (process id), the process creation and exit time, and the file path. The information can be retrieved from these members of \texttt{\_EPROCESS}:
 
 \begin{itemize}
-  \item \textbf{Process id}: \texttt{PVOID UniqueProcessId}
-  \item \textbf{Process create time}: \texttt{LARGE\_INTEGER CreateTime}
-  \item \textbf{Process exit time}: \texttt{LARGE\_INTEGER ExitTime}
-  \item \textbf{File path}: \texttt{UCHAR ImageFileName[16]}
+% \setlength\itemsep{-0.5em}
+  \item Process id: \texttt{PVOID UniqueProcessId}
+  \item Process create time: \texttt{LARGE\_INTEGER CreateTime}
+  \item Process exit time: \texttt{LARGE\_INTEGER ExitTime}
+  \item File path: \texttt{UCHAR ImageFileName[16]}
 \end{itemize}
 
-\texttt{UniqueProcessId} is a pointer, in this case, the value must be dereferenced. The value is inside the kernel space, so the tool will request driver to fetch the value. When all processes information is gathered, we have completed step 3.
+\texttt{UniqueProcessId} is a pointer, in this case, the value must be dereferenced. The value is inside the kernel space, so the tool will request the driver to fetch the value. When all processes information is gathered, we have completed step 3.
 
-\subsection[Find potential hidden process]{Find potential hidden process}
+\section[Find potential hidden process]{Find potential hidden process}
 
-In step 4, with all the processes information collected from pool tag scanning, we will attempt to filter out normal processes. Normal processes are visible to the system and can be enumerated by traversing the \texttt{LIST\_ENTRY ActiveProcessLinks} of any process. To get an \texttt{\_EPROCESS}, we will call \texttt{PsLookupProcessByProcessId}\ref{lst:pslook} with the tool id. Filtering out process that are not on the list after traversing the \texttt{\_EPROCESS} will yield a list of potentially hidden processes.
+In step 4, with all the processes information collected from pool tag scanning, we will attempt to filter out normal processes. Normal processes are visible to the system and can be enumerated by traversing the \texttt{LIST\_ENTRY ActiveProcessLinks} of any process. To get an \texttt{\_EPROCESS}, we will call \texttt{PsLookupProcessByProcessId}, Listing~\ref{lst:pslook}, with the tool id. Filtering out process that is not on the list after traversing the \texttt{\_EPROCESS} will yield a list of potentially hidden processes.
 
-With the list of process id of mallicious processes, we will dump the process memory and collect the binary file. For dumping a process from a memory, we can use a tool created by Geoff McDonald \cite{processdump}. The binary file can be collected through the file path string extracted. Zipping all the dump files and binaries, we send the zip file to the server for furthur analysis.
-
-\begin{lstlisting}[language=c,caption={PsLookupProcessByProcessId},label={lst:pslook}]
+\begin{lstlisting}[language=cpp,caption={PsLookupProcessByProcessId},label={lst:pslook}]
 NTSTATUS PsLookupProcessByProcessId(
   HANDLE    ProcessId,
   PEPROCESS *Process
 );
 \end{lstlisting}
 
+With the list of process id of malicious processes, we will dump the process memory and collect the binary file. For dumping a process from memory, we can use a tool created by Geoff McDonald \cite{processdump}. The binary file can be collected through the file path string extracted. Zipping all the dump files and binaries, we send the zip file to the server for further analysis. If the researchers find the file is a malware, they will write a script to stop and remove the malware from the computer and send back to the tool running for automatic removal. Ofcourse, there are time taken to analyze new sample, but we can notify the user through email that there is a malware running and ask the user to open the tool, enter the malware id, and receive automatic malware removal.
+
+\chapter[Challenges and conclusion]{Challenges and conclusion}
+
 \section[Challenges]{Challenges}
 
-The proposed method uses pool tag scanning, so we should face the same problems by doing pool tag scanning. We may find a \textit{deleted} or \textit{freed} process. Or when some part of RAM could not be cleaned on shutdown\footnote{The cold boot attack mechanism}, some processes may have their \texttt{CreateTime} before the system start time. Besides, pool chunk can be freely allocated and a structure is tagged with \texttt{Proc} but contains another object can happen. Some malware may use this approach to create false positive chunk. The tool information collection misses the processes activities which is a very important information for analysis. The tool could be added a monitoring feature when scanning and records all processes activities. Scanning only for \texttt{\_EPROCESS} could lose some potential malware hiding by memory execution, consider \textit{process injection} as mentioned in Section ~\ref{sec:processinjection}. In these edge cases, search for \texttt{\_ETHREAD} then find the correspondence \texttt{\_EPROCESS} and list the \texttt{\_ETHREADS} to check for existence. Lastly, this method only discuss on pool tag scanning and does not use pool tag quick scanning as described in Section ~\ref{sec:pooltagscanning}, for a big memory system, this could result in long scanning time. Pool tag quick scanning should be an improve, but we will focus on implementing the pool tag scanning technique and will try to improve with pool tag quick scanning.
+With the given proposed method above, we will name out some challenges the method might have and ways we can resolve those challenges.
+
+Firstly, the proposed method is based on pool tag scanning, and thus, we should hit the same problem where pool tag scanning has. Pool tag scanning can scan deleted or freed process, where the pool chunks are merged but not overwritten. Pool tag scanning uses tag value, but any kernel driver can name these tag values, a hacker may write malware that allocates a false positive chunk with tag \textit{Proc}.
+
+Secondly, the tool only scans for \texttt{\_EPROCESS} and may miss processes that were injected to another process as a thread. To resolve this, the tool could scan for \texttt{\_ETHREAD} and find the parent process \texttt{\_EPROCESS} using \texttt{IoThreadToProcess}. Then, from the given \texttt{\_EPROCESS}, loop through the \texttt{ThreadListHead} to find whether the thread is recorded in the process or not.
+
+Thirdly, the hidden process activities are not monitored to send with the binary and the process memory dump. Process activities are significant to learn about file behaviour. It would be better if the result is attached with a log of process activities including file I/O and networking request/response.
+
+Lastly, the algorithm using is not quick scanning. For a larger memory, it could result in long scanning time. Pool tag quick scanning would be a considerable improvement, but we will focus on implementing the standard algorithm and try to improve with pool tag quick scanning.
+
+\section[Conclusion]{Conclusion}
+
+In this proposal stage, we have researched thoroughly about memory forensics in Windows and have come up with a solution to perform live memory forensics for finding hidden processes running. Besides, our group has begun to start developing the prototype of the tool.
+
+Within the next stage of the thesis, we will continue working on the implementation of the tool, perform testing and resolve the challenges mentioned above. We will also try to target lower Windows versions to test the usability of the tool.
+

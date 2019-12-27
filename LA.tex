@@ -6,11 +6,12 @@
 %% - version 1.2 (2017/08/11)
 %% - Created on 2016/08/16.
 
-\documentclass[fontsize=13pt,oneside,a4paper,openany]{vietkey.luanan.1.2}
+\documentclass[fontsize=13pt,twoside,a4paper,openright]{vietkey.luanan.1.2}
 
 %tham số firstinits=true để viết tắt, defernumbers để số thứ tự liền mạch.
 \usepackage[backend=bibtex,
             bibstyle=luanan,
+            % style=ieee,
             sorting=nyvt,
             block=none,
             %defernumbers=true,
@@ -20,37 +21,81 @@
 \usepackage{fancyvrb}
 \usepackage{dirtytalk}
 \usepackage{listing}
+\usepackage[acronym]{glossaries}
+
+\lstdefinelanguage{cpp}{
+      % backgroundcolor=\color{black!10},
+      basicstyle=\footnotesize \ttfamily \color{black} \bfseries,
+      breakatwhitespace=false,
+      breaklines=false,
+      captionpos=t,
+      % commentstyle=\color{dkgreen},
+      deletekeywords={...},
+      escapeinside={\%*}{*)},
+      frame=tb,
+      language=C++,
+      keywordstyle=\color{purple},
+      morekeywords={NTSTATUS,HANDLE,PEPROCESS},
+      identifierstyle=\color{black},
+      stringstyle=\color{blue},
+      numbers=left,
+      numbersep=5pt,
+      numberstyle=\tiny\color{black},
+      rulecolor=\color{black},
+      showspaces=false,
+      showstringspaces=false,
+      showtabs=false,
+      stepnumber=1,
+      tabsize=4,
+      basicstyle=\linespread{1}\footnotesize\ttfamily,
+      title=\lstname,
+}
+
+\DeclareCaptionFormat{listing}{\rule{\dimexpr\textwidth+1pt\relax}{0.1pt}\vspace{-6pt}\par#1#2#3}
+\captionsetup[lstlisting]{format=listing,singlelinecheck=false, margin=0pt, font={sf},labelsep=space,labelfont=bf}
 
 \addbibresource{../bibdmt.bib}                 %%% dữ liệu về tài liệu tham khảo.
 \begin{document}
 
+% ==================== PAGE ORDERING =================
+% Title Page
+% Copyright Page
+% Abstract
+% Dedication, Acknowledgements, and Preface (each optional)
+% Table of Contents, with page numbers
+% List of Tables, List of Figures, or List of Illustrations, with titles and page numbers (if applicable)
+% List of Abbreviations (if applicable)
+% List of Symbols (if applicable)
+% Chapters, including:
+% Introduction, if any
+% Main body, with consistent subheadings as appropriate
+% Appendices (if applicable)
+% Endnotes (if applicable)
+% References (see section on References for options)
+
 \include{trangbia}                          %%% có thể thay đổi
-
-\VKnumRoman                                 %%% đánh số bằng chữ cái i, ii...
-
 % \include{loicamdoan}                        %%% có thể thay đổi
 % \include{loicamon}                          %%% có thể thay đổi
-
 \input{abstract.tex}
+\VKnumRoman                                 %%% đánh số bằng chữ cái i, ii...
+\blankpage
 \VKmucLuc                                   %%% mục lục
-
 % \include{kyhieu}                            %%% có thể thay đổi
-
 \VKdanhMucHinhVe                            %%% danh mục hình vẽ
 \VKdanhMucBangBieu                          %%% danh mục bảng biểu
 %\VKdanhMucDinhLy
 %\VKdanhMucDinhNghia
-\lstlistoflistings
+\VKdanhMucListings
+\input{glossary.tex}
 \VKbatDaudanhSo                             %%% bắt đầu đánh số từ 1,2,3...
-
+\blankpage
 % \include{loinoidau}                         %%% có thể thay đổi
-\input{chapters/introduction.tex}
 
+\input{chapters/introduction.tex}
 \chapter[Background]{Background}
 \input{chapters/operating_system.tex}
 \input{chapters/windows_internal.tex}
 \input{chapters/forensics.tex}
-
 \input{chapters/related_words.tex}
 \input{chapters/proposed_method.tex}
 % \include{ketluan}                           %%% có thể thay đổi
@@ -59,7 +104,7 @@
 \nocite{*}
 \VKngatTrang                                %%% ngắt trang để chuyển sang tài liệu tham khảo
 \VKtaiLieuThamKhao                          %%% tài liệu tham khảo
-\VKdanhSoPhuLuc                             %%% bắt đầu đánh số cho phụ lục
+% \VKdanhSoPhuLuc                             %%% bắt đầu đánh số cho phụ lục
 
 % \include{phuluccaidat}                      %%% có thể thay đổi
 
