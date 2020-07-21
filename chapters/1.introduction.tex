@@ -1,0 +1,108 @@
+\chapter[Introduction]{Introduction}
+
+\section[Motivation]{Motivation}
+
+Through computer development, computers have become a standard method for
+humans around the world to study, work, and entertain. Most activities of our
+daily lives involve computers. Individuals across the globe have created
+systems running on computers to assist them in doing from trivial to complex
+tasks. However, this somehow influenced other people to commit harmful
+activities, and these people are often referred to as \textit{hacker}.  Hackers
+have been creating software causing damage and steal confidential or private
+information, and these types of software are malware. In the early days of
+malware, they are often harmless, created to disturb the owner of the infected
+machine.  Then soon, they became severe threats, breaking the systems, stealing
+data, asking for ransom. The battle between malware writers and malware
+analysts has started, since 1971, and no sign of stopping.
+
+Malware analysts have been struggling to protect the system from malware.
+However, it has never come close to perfection. The most efficient resolution
+to the problem uses file checksum with unique bytes sequences in a particular
+malware to form the malware's signature. A list of malware's signature, for
+example, Yara rules \cite{yararules}, is then checked for every file upon
+entering the system, whether it is file downloading or copying from USB to
+disk. Relying on malware's signature for filtering files often miss out newer
+ones. Thus, it is highly vulnerable to the newer class of malware. When the
+system is infected with unknown malware, malware analysts perform digital
+forensics to capture the malware and learn about its behavior. Digital
+forensics, as described in A Road Map for Digital Forensic Research
+\cite{roadmap}:
+
+
+\say{The use of scientifically derived and proven methods toward the
+preservation, collection, validation, identification, analysis, interpretation,
+documentation and presentation of digital evidence derived from digital sources
+for the purpose of facilitating or furthering the reconstruction of events
+found to be criminal, or helping to anticipate unauthorized actions shown to be
+disruptive to planned operations.}
+
+Digital forensics includes many different aspects, while the most intrigued
+part of digital forensics is memory forensics. Memory forensics ``provides
+unprecedented visibility into the runtime state of the system, such as which
+processes were running, open network connections, and recently executed
+commands,'' as stated in the book The Art of Memory Forensics
+\cite{ligh2014art}. By doing memory forensics, we can collect evidence and
+reveal what causes the system to misbehave and malware behavior.  Digital
+forensics happens after a malware is found in the system, but what if it has
+never been found. In cases where it was disguising as legitimate software, or
+it was hiding from the system. In these scenarios, we fail to detect and
+perform any analysis.
+
+From the early days of the 1990s, malware writers have been improving ways to
+hide the malware. In 2017, a small report \cite{evolutionHidding} has revised
+on hiding techniques used by malware over the years in the Windows OS. Most of
+these techniques are either preventable or mitigable. However, even in 2019,
+one can still observe incidences where malware hides so effectively. For
+example, the \textit{Titanium} backdoor\footnote{Programs that receives remote
+connections} on Windows 10 disclosed November 2019 \cite{titanium}. These
+incidences are reported by experts who are experienced in digital forensics and
+malware analysis. We tried to find a solution where a simple program can
+perform digital forensics and report the current machine status. Many solutions
+came up, but they do not work out-of-the-box, the user must install Python (at
+least), extract the memory, and then perform forensics on the memory file, all
+too troublesome. We turn our research into doing forensics on a running system,
+live forensics, but it has limited research, although feasible
+\cite{reviewLive}. As a result of this, we propose a quick and nice solution to
+do live forensics on the Windows machine that removes the troublesome. The
+outcome of the solution is a small CLI tooling capable of doing forensics on
+multiple Windows versions.
+
+\section[Thesis outcome]{Thesis outcome}
+
+This thesis outcome is a small program demonstrating live forensics ability
+without memory acquisition. We try to apply with the current forensics
+technique to find hidden malware with the tool. As a result, we expect our tool
+to implement these techniques. These techniques will be discussed later in
+Chapter 3.
+
+\begin{itemize}
+  \item Traverse some important system lists
+  \item Pool tag scanning
+  \item SSDT table and IRP inspection
+  \item Show unloaded drivers
+\end{itemize}
+
+With the above features, this thesis should reach these goals:
+
+\begin{itemize}
+% \setlength\itemsep{-0.5em}
+  \item Understand the basics concept of OS that supports memory forensics,
+  \item Understand to some extent of Windows internals,
+  \item Understand some techniques often used to do Windows memory forensics,
+  \item Analyze some already existed tools doing memory forensics,
+  \item Implement the tool to find hidden malware.
+\end{itemize}
+
+\section[Structure]{Structure}
+
+\begin{itemize}
+  \item Chapter 1 gives an overview, the goals and challenges of this thesis proposal,
+  \item Chapter 2 presents the background on OS, Windows Internal and malware prevention technology,
+  \item Chapter 3 introduces malware hiding techniques and ways to find them using forensics methods,
+  \item Chapter 4 reviews some related works,
+  \item Chapter 5 lists the tools used when developing,
+  \item Chapter 6 suggests our solution,
+  \item Chapter 7 discusses on the solution's applications and their results,
+  \item Chapter 8 disputes about the strengths and limitation in our solution,
+  \item Chapter 9 concludes our thesis.
+\end{itemize}

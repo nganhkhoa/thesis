@@ -1,0 +1,19 @@
+\chapter[Solution]{Solution}
+
+Rekall on Chapter 4, the current tools used for finding hidden process are
+forensics tools and live system queries. Forensics tools requires the memory
+file to be extracted and the live system queries misses information that could
+only be found when doing forensics. We hope to deliver a quick and nice
+solution to perform memory forensics on a live machine.
+
+This chapter introduces LPUS, a system capable of doing live memory forensics
+without extracting the RAM contents. In short, LPUS uses a kernel-mode driver
+to locate the kernel base and efficiently walks the kernel structures without
+breaking the systems. Since LPUS can locate the appropriate kernel address to
+be accessed, it does not require the memory file. LPUS uses forensics to help
+users find malware by implementing some standard scans and collecting
+information crucial for identifying hidden malware.
+
+\input{chapters/proposal/1.prerequisites.tex}
+\input{chapters/proposal/2.methodology.tex}
+% \input{chapters/proposal/3.result.tex}

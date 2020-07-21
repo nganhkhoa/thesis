@@ -1,0 +1,29 @@
+\chapter[Background]{Background}
+
+This thesis is built up using many backgrounds on memory management, the
+Windows internals and some malware prevention technology. This chapter will
+give readers a quick summary to understand these key points. The chapter
+heavily depends on these materials \cite{ligh2014art}
+\cite{russinovich2012windows}.
+
+\input{chapters/background/1.pagination.tex}
+\input{chapters/background/2.windows.tex}
+\input{chapters/background/4.counter.tex}
+
+\chapter[Hidden malware and memory forensics]{Hidden malware and memory forensics}
+
+Malware has many ways to run inside the system. It can create a process, create
+a thread, load a library, or run a driver. A hidden malware will make these
+objects can not be found when using Windows API or by traversing the legacy
+lists.  For example, there are Windows APIs that can get information on
+processes, threads, libraries, drivers, \texttt{EnumProcesses},
+\texttt{Thread32First}, \texttt{EnumDeviceDrivers},
+\texttt{NtQuerySystemInformation}. Malware will try to remove itself from these
+API results. Thus, if an inspection system uses these API, the malware present
+is not shown. To reveal the malware, one has to use forensics methods,
+including but not limited to memory forensics.  In this chapter, we present in
+technical terms how malware interfere with the system in order to hide and how
+forensics investigators can find them using memory forensics.
+
+\input{chapters/background/3.hiding.tex}
+\input{chapters/background/5.forensics.tex}

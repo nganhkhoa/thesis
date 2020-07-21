@@ -1,0 +1,76 @@
+\chapter[Discussion]{Discussion}
+
+Every solution has its advantages and disadvantages. LPUS is no exception. In
+this chapter we discuss the advantages LPUS has over other tools and also
+criticize the disadvantages of LPUS.
+
+\section[Advantages]{Advantages}
+
+As of the prerequisites, LPUS only needs to be run as an Administrator on an
+internet-connected machine to perform forensics on the current machine. LPUS
+can works on any Windows version higher than 7 and easily supports new version.
+
+As of the results, LPUS can give the same result to Volatility if the memory
+file is taken after LPUS finishes. But because LPUS can perform live forensics,
+we expect LPUS to fetch new result time by time.
+
+LPUS works without the installation of any third-party plugins. Everything is
+compiled into a binary and a driver. The Visual C++ module is also statically
+compiled, so LPUS can be used on any Windows machine without installing
+anything.
+
+LPUS directly queries the kernel data without having a memory file. LPUS gets
+the kernel base address and traverses through the kernel space without crashing
+the system.
+
+LPUS can apply forensics techniques to help one finds the hidden process and
+much more information. This thesis's scope is about finding hidden process
+memory, but we can see that LPUS can do more than just that. LPUS can apply
+more forensics methods and develop a whole set of functionalities that
+Volatility or Rekall has.
+
+\section[Disadvantages]{Disadvantages}
+
+LPUS backend does not check for address validity when fetching bytes from the
+kernel, which will crash the system if an invalid address is asked. LPUS should
+check if the address is in the kernel space and must ensure the page containing
+the address is in memory. LPUS backend is copying the whole memory (from
+address and of \texttt{size} bytes) into the buffer without splitting into many
+copy operations.  If the front end asks the backend a big memory space
+containing some invalid memory holes, the system crashes.
+
+LPUS is using members in the structure to find the address of an object when
+doing pool tag scanning, this would give false result if malware rewrite these
+fields.  LPUS could check for optional headers for executive objects. Or
+better, LPUS can use other scientific methods to answer the question, ``Is the
+structure reside in this byte-array''.
+
+LPUS can not access the user-space address and misses useful information.
+Further research is needed to access the process user-space to perform
+forensics.
+
+LPUS backend does not check if the process asking is the LPUS frontend. A
+program can imitate LPUS frontend and access the kernel. Both the back end and
+the front end must have a protocol to verify each other to prevent application
+access to the kernel space.
+
+\section[Other minor problems]{Other minor problems}
+
+LPUS has some design issues that can be fixed to make LPUS better. These are
+not severe problems but worth mentioning.
+
+The kernel driver has to be installed inside the \texttt{C:\textbackslash
+\textbackslash Windows\textbackslash System32 \textbackslash drivers} while it
+is possible to put the driver anywhere to load.
+
+LPUS downloads the debug symbols for the systems, and this requires an internet
+connection. We can download the debug symbols for every system and pack it in
+the LPUS distribution and use a pre-downloaded PDB file.
+
+Loading the kernel driver is using the undocumented API \texttt{NtLoadDriver},
+while most programs loading the driver uses \textit{Services} feature in
+Windows.
+
+LPUS is now distributed as multiple binaries. We need to rework them into one
+binary and use CLI arguments to select forensics methods.
+

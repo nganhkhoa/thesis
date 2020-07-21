@@ -1,0 +1,36 @@
+\chapter[Related Works]{Related works}
+\input{chapters/relatedworks/1.volatility.tex}
+\input{chapters/relatedworks/2.rekall.tex}
+\input{chapters/relatedworks/3.memtriage.tex}
+
+\section[SysInternal]{SysInternal}
+
+Sysinternals \cite{sysinternal} is a suite of programs made by Mark
+Russinovich, now redistributed by Windows. Two programs that are used by
+malware analysts to inspect the system are Process Explorer and Process
+Monitor.  Process Explorer is a Task manager with verbose information. Process
+Explorer uses Windows API to query the systems for process and threads
+information.  Process Monitor captures events by Windows and displays them in a
+GUI. Process Monitor can capture process/thread creation, termination, file
+access, registry access, network activities and many more. On a live machine,
+Process Monitor is handy to know what process is doing so that malware analysts
+can narrow down process by process to find the malware writing registry values,
+edit a file, or connecting to a remote server.
+
+
+\begin{figure}[h]
+  \centering
+  \caption{Process Explorer}
+  \label{fig:processexp}
+  \includegraphics[scale=0.4]{images/processexp.png}
+\end{figure}
+
+\begin{figure}[h]
+  \centering
+  \caption{Process Monitor}
+  \label{fig:processmon}
+  \includegraphics[scale=0.5]{images/processmon.png}
+\end{figure}
+
+\input{chapters/relatedworks/6.prochacker.tex}
+

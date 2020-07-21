@@ -1,0 +1,29 @@
+\section[Result]{Result}
+
+We have written a few utilities to demonstrate what we can do with LPUS. The
+utilities are pool tag scanning for processes, threads, drivers, files, kernel
+modules; traversing the list of processes from \texttt{PsActiveProcessHead},
+\texttt{KiProcessListHead}, \texttt{HandleTableListHead}; traversing the list
+of loaded kernel module from \texttt{PsLoadedModuleList}; list out the unloaded
+drivers, and the SSDT table; and inspecting any driver's 28 major functions.
+We have also written a command similar to \texttt{psxview} of Volatility to
+compare the results of processes found by many methods.
+
+Although currently LPUS is only tested in Windows 7 and Windows 10 in
+VirtualBox, it gives positive results. LPUS run and output the scanned objects
+without crashing the systems. The results are checked alongside with WinDbg, a
+Windows debugger, attached to the machine in virtualization. The test perform
+as follows, LPUS runs and out the result, then the results are checked by
+stoping the machine and attaching WinDbg. In WinDbg, commands such as
+\texttt{dt} can be used to output the detail of a structure at an address, we
+checked for every object found by LPUS with WinDbg. For list traversing, we
+used the command in Listing.\ref{} to get the list of address in global lists.
+The SSDT and driver 28 major functions is not checked through WinDbg, we
+believe the addresses should be in kernel modules, which upon checking all
+addresses output belongs to kernel modules. We also conducted a memory
+acquisition using VirtualBox and WinPmem and compare the results found with
+Volatility, the acquisition process happens seconds after the scans took place.
+The results between LPUS, WinDbg and Volatility by VirtualBox memory
+acquisition and Volatility by WinPmem is provided in Table.\ref{}.
+
+% TODO: insert test result table

@@ -1,0 +1,39 @@
+# Overview:
+
+## Chap 2:
+	- Khi discuss từng structure nên reference tới Listing tương ứng giúp người đọc dễ follow.
+
+	- Section 2.2.3 - Figure 2.6: Không biết có phải typo không nhưng sao trong bước cuối cùng chỉ mỗi Read action bị denied ("The scanner denies the operation ...") ?
+
+## Chap 3:
+	- Section 3.1.1: "On 32-bit systems, each threads has a different SSDT, which can be edited (by kernel process). Because this table is only visible to one thread, the malware can modify this table without having to change the system table." 
+	Cần elaborate hơn đoạn này: tức là giữa table "visible to one thread" và system table không có liên hệ gì nên malware có thể modify được ?
+
+	- Section 3.1.2: nên cắt nghĩa IRP là gì (như trong câu 2) trước khi dùng abbreviation trong câu 1.
+
+	- Section 3.2.3: "The pool tag quick scanning research is conducted on Windows Vista and 8, we
+	extended the findings of these ranges on Windows XP, 7, 8, and 10 (all versions from
+	2015 to 2020), with reference from the Rekall project. The result can be found in Table
+	3.1. The convention nt!foo is a shorthand for the address of foo in kernel space." 
+	Ý của "we extended the findings" là thesis này mở rộng các research đã có hay các extended findings ấy được người khác làm "with reference from the Rekall project" (nếu vậy thì không nên dùng "we extended") ?
+
+## Chap 4:
+	- Section 4.5: "Process hacker does not use any forensics methods to detect malware ..." --> Tức là Process hacker dùng approach khác với các tools khác và khác với approach của thesis ? Vậy có thể so sánh gì về mặt hiệu quả của approach trong thesis với Process hacker không ? (không thấy đề cập trong chap 8 & 9)
+
+## Chap 5 & 6:
+	- Section 6.2.5: "The frontend uses the PdbStore heavily on memory accessing operation." 
+	Ý của "heavily" là PdbStore sẽ hỗ trợ việc scanning các pages trong quá trình forensics ? Chẳng hạn như call MmIsAddressValid ? Ngoài ra thiếu đánh số (4) cho Result Handler trong paragraph (theo mô tả trong Fig. 6.3).
+
+## Chap 7:
+	- Như Bảo comment, nên thêm diagram để trực quan hơn.
+
+# Typos: (to name a few...)
+P3: "acquistion" -> "acquisition", "these technique" -> "these techniques"
+P6: many implementation -> many implementations; "system interupt" -> "system interrupts"
+P19: "infitrate" -> "infiltrate"; "These type" -> "These types"
+P20: "some how" -> "somehow"
+P21: "e.g. writes a malware to file" -> "e.g. writing a malware to file"
+P23: "when a breach occur" -> "when a breach occurs"; "This step if often called" -> "This step is often called"
+P27: "32-bit elements are not the direct address of the functions." -> Thường thì không bắt đầu 1 câu bằng số
+
+Vẫn còn typos, cần proofreading kỹ hơn

@@ -1,0 +1,229 @@
+\section[Memory Forensics]{Memory Forensics}
+
+With all the preventions, malware still finds a way to bypass the security
+setup and infect the system. When such an event occurs, a skilled technician
+will begin analyzing the system. To start the investigation, they would need to
+take the physical memory content of the system and analyze the content looking
+for prominent malware. This is called memory forensics, a sophisticated process
+done by a team of security researchers when a breach occurs or when an unknown
+factor compromises the system.
+
+\subsection[Memory acquisition]{Memory acquisition}
+
+The first step in memory forensics is capturing the content of physical memory.
+This step is often called as \textit{memory acquisition}. The goal was to load
+the RAM data inside a file. There are multiple ways \cite{memoryAcquisition} to
+do this in a running machine using a kernel driver:
+
+\begin{enumerate}
+\item Read \texttt{\textbackslash\textbackslash.\textbackslash PhysicalMemory}
+\item Use \texttt{MmMapMemoryDumpMdl}
+\item Use \texttt{MmMapIoSpace}
+\item PTE remapping
+\end{enumerate}
+
+The RAM is a device, and Windows exposes the device as a file with the absolute
+path \texttt{\textbackslash\textbackslash.\textbackslash PhysicalMemory}. By
+reading this file, we are accessing the RAM itself. However, Windows prevented
+reading this file. The second and third method maps physical page(s) to the
+kernel space, the content is sent back to the user space to write out the file.
+The fourth method is a technique described by Michael Cohen and Johannes
+Stüttgen \cite{pteremap} to capture the memory using the PTE, page table entry.
+
+Most memory acquisition tools are closed source, the one open-source memory
+acquisition tool is WinPmem \cite{winpmem} and using the third and fourth
+method to capture the RAM. WinPmem's author also encourages using the PTE
+remapping method for better results. Other programs often used for memory
+acquisition are \texttt{DumpIt} by Moonsol, \texttt{FTK Imager} by AccessData,
+\texttt{Belkasoft RAM Capturer} by Belkasoft.
+
+Hypervisor, VirtualBox or VMWare, can generate the memory file.  Although the
+memory file format is different from each virtual machine implementation, the
+documentation of the file format is available online.
+
+The last way to acquire the memory content is through Windows debug mechanism.
+Windows has an option to generate the memory file when the system crash, if
+this option is on, Windows will produce the file at \texttt{C:\textbackslash
+Windows\textbackslash MEMORY.DMP} on system crash. Windows also has multiple
+option to the memory file, such as the \textit{full dump}, \textit{mini dump},
+\textit{kernel dump}. These files are not officially documented by Windows and
+intended to be used by Windows debugger, but researchers have reversed the file
+format for forensics purposes \cite{mdmpfile} \cite{dmpfile}.
+
+\subsection[KDBG]{KDBG}
+
+KDBG is a Windows structure for debugging purposes, this structure contains
+pointers to many kernel essential components, such as the list of processes.
+Finding this structure in the memory file will give some insight into the
+system.  This structure can be found using the four-byte ``KDBG'' in Windows
+versions before 8. In Windows 8 and above, the structure is encoded and makes
+it more challenging to find the structure. However, by brute-scanning and
+brute-decoding \cite{kdbgEncoded}, one can still find the structure.
+
+\subsection[Pool tag scanning]{Pool tag scanning}
+
+As described in \ref{sec:pool}, each block has a pool header contains a
+four-byte tag. By scanning for a specific tag value that the OS uses to
+allocate for a kernel structure, we are able to search for all the object
+allocated, and sometimes de-allocated but not overwritten. Each tag-block
+matches should be furthur checked for validity, the pool body size (block size
+subtract the pool header size) should be bigger than the object holding (if the
+object is an executive object), or equal to the object.  Optional checks for
+pool type value are done with objects usually allocated in one pool section.
+E.g \texttt{\_EPROCESS} is always allocated inside the non-paged pool section,
+hence the pool type is 2.
+
+As described in \ref{sec:pool}, each block has a pool header contains a
+four-byte tag. By scanning for a specific tag value that the OS uses to
+allocate for a kernel structure, we can search for all the object
+allocated, and sometimes de-allocated but not overwritten. Each tag-block
+matches should be further checked for validity, the pool body size (block size
+subtract the pool header size) should be bigger than the object holding (if the
+object is an executive object), or equal to the object.  Optional checks for
+pool type value are done with objects usually allocated in one pool section.
+E.g., \texttt{\_EPROCESS} is always allocated inside the non-paged pool section,
+hence the pool type is 2.
+
+The pool tag quick scanning research is conducted on Windows Vista and 8, we
+extended the findings of these ranges on Windows XP, 7, 8, and 10 (all versions
+from 2015 to 2020), with reference from the Rekall project. The result can be
+found in Table \ref{tab:nonpaged}. The convention \texttt{nt!foo} is a
+shorthand for the address of \texttt{foo} in kernel space.
+
+\begin{table}[]
+\begin{tabular}{lll}
+\hline
+Windows version & Pool start                      & Pool end                      \\ \hline
+XP              & \texttt{nt!MmNonPagedPoolStart} & \texttt{nt!MmNonPagedPoolEnd} \\
+7, 8, 8.1       & \texttt{nt!MiNonPagedPoolStart} & \texttt{nt!MiNonPagedPoolEnd} \\
+10 2015         & \texttt{nt!MiState}
+                & \texttt{nt!MiState} \\
+                & \texttt{->SystemNodeInformation}
+                & \texttt{->SystemNodeInformation} \\
+                & \texttt{.NonPagedPoolFirstVa}
+                & \texttt{.NonPagedPoolLastVa} \\
+10 2016-2019    & \texttt{nt!MiState}
+                & \texttt{nt!MiState} \\
+                & \texttt{->Hardware}
+                & \texttt{->Hardware} \\
+                & \texttt{.SystemNodeInformation}
+                & \texttt{.SystemNodeInformation} \\
+                & \texttt{.NonPagedPoolFirstVa}
+                & \texttt{.NonPagedPoolLastVa} \\
+10 2020         & \texttt{nt!MiState}
+                & \texttt{nt!MiState} \\
+                & \texttt{->Hardware}
+                & \texttt{->Hardware} \\
+                & \texttt{.SystemNodeNonPagedPool}
+                & \texttt{.SystemNodeNonPagedPool} \\
+                & \texttt{.NonPagedPoolFirstVa}
+                & \texttt{.NonPagedPoolLastVa} \\ \hline
+\end{tabular}
+  {\raggedright \texttt{nt!MiState} is a pointer to the type
+  \texttt{\_MI\_SYSTEM\_INFORMATION}, this structure layout is different with
+  each Windows 10 releases \par}
+  {\raggedright \texttt{nt!MiNonPagedPoolStart} or
+  \texttt{nt!MiNonPagedPoolStartAligned} both valid for Windows 7, 8, 8.1. Aligned
+  version points to the first valid page in the pool \par}
+
+  \caption{Non paged pool start and end}
+  \label{tab:nonpaged}
+\end{table}
+
+Pool tag scanning is often used to ensure there is no process hiding from the
+kernel list by simple removal. Comparing the pool tag scanning result with the
+list traversing, we may be able to reveal unlinked objects from the global
+list. However, pool tag scanning can be used to reveal other objects often not
+reside on any list. These can be internet-related structures, kernel callbacks.
+Although Windows does not document this structure, many people have studied the
+Windows source code (by reversing) and came up with structure definitions and
+reasonable names. In Table \ref{tab:pooltag}, we list the tags and the
+structure where pool tag scanning is often used to find. These tags are used in
+the Volatility framework.
+
+\begin{table}[]
+\begin{tabular}{llll}
+\hline
+  Structure                 & Structure Name                     & Pool Tag (new) & Pool Tag (old)        \\ \hline
+  Driver Object             & \texttt{\_DRIVER\_OBJECT}          & Driv           & Dri\textbackslash xf6 \\
+  File Object               & \texttt{\_FILE\_OBJECT}            & File           & Fil\textbackslash xe5 \\
+  Process                   & \texttt{\_EPROCESS}                & Proc           & Pro\textbackslash xe3 \\
+  Thread                    & \texttt{\_ETHREAD}                 & Thre           & Thr\textbackslash xe5 \\
+  Modules                   & \texttt{\_LDR\_DATA\_TABLE\_ENTRY} & MmLd           &                       \\
+  TCP endpoint              & *\texttt{\_TCP\_ENDPOINT}          & TcpE           &                       \\
+  TCP listener              & *\texttt{\_TCP\_LISTENER}          & TcpL           &                       \\
+  UDP endpoint              & *\texttt{\_UDP\_ENDPOINT}          & UdpA           &                       \\
+  TCP connection            & *\texttt{\_TCPT\_OBJECT}           & TCPT           &                       \\
+  Notification Packet       & *\texttt{\_NOTIFICATION\_PACKET}   & IoFs           &                       \\
+  Shutdown Packet           & *\texttt{\_SHUTDOWN\_PACKET}       & IoSh           &                       \\
+  Generic callback          & *\texttt{\_GENERIC\_CALLBACK}      & Cbrb           &                       \\
+  DbgPrint callback         & *\texttt{\_DBGPRINT\_CALLBACK}     & DbCb           &                       \\
+  Registry callback         & *\texttt{\_REGISTRY\_CALLBACK}     & CMcb           &                       \\
+  Hardware profile callback & *\texttt{\_NOTIFY\_ENTRY\_HEADER}  & Pnp9           &                       \\
+  Device interface callback & *\texttt{\_NOTIFY\_ENTRY\_HEADER}  & PnpD           &                       \\
+  Target device callback    & *\texttt{\_NOTIFY\_ENTRY\_HEADER}  & PnpC           &                       \\
+\hline
+\end{tabular}
+  {\raggedright *: This structure is not documented by Windows, the name is taken
+  from Volatility framework \par}
+  \caption{Comprehensive list of pool tag and corespondent structure}
+  \label{tab:pooltag}
+\end{table}
+
+\subsection[SSDT and IRP hook detection]{SSDT and IRP hook detection}
+
+SSDT hooking is dangerous in a way it can modify the kernel system call
+behavior.  Detection of SSDT involves finding the system table and locate the
+function address between loaded modules.The SSDT is located at
+\texttt{KiServiceTable}, with \texttt{KiServiceLimit} elements of 32-bit value.
+Every element is an offset to the function of the SSDT. To retrieve the address
+of the function, we follow Listing \ref{lst:ssdt}.
+
+
+\begin{lstlisting}[language=cpp,caption={Retrieve SSDT functions},label={lst:ssdt},float,floatplacement=H]
+int32_t* KiServiceTable;
+int KiServiceLimit;
+void* ssdt[KiServiceLimit];
+for (int i = 0; i < KiServiceLimit; i++) {
+  ssdt[i] = (void*) ((int64_t)KiServiceTable
+                     + (KiServiceTable[i] >> 4));
+}
+\end{lstlisting}
+
+After recovering all the functions in the system call table, we will check
+every loaded module of type \texttt{\_KLDR\_DATA\_TABLE\_ENTRY} and see if the
+address of the function is in the range of the \texttt{DllBase} and
+\texttt{DllBase + Size}, if the address is between this range, the function is
+in this module.  Because these are system calls, the functions should reside in
+the kernel module, \texttt{ntoskrnl.exe}. If some functions reside in another
+module, the SSDT probably hooked. Some malware even modify the function
+instruction to jump or call to itself, this can be check by dumping several
+bytes at the function address and decompile into machine code checking for jump
+instruction and check the referenced address module.
+
+IRP hooking is in driver 28 major functions. To detect this type of hook, we
+list the 28 major functions searching for the loaded modules containing these
+functions. It should be noted that the driver should either have the IRP
+functions belongs to the driver or the kernel modules. If the functions are of
+another module, then it was probably hooked. If the malware patch the
+underlying function to jump or call itself, decompile the first few bytes
+looking for such instruction and check the referenced address' module. For
+the advanced IRP hooking method, this can only be detected after reversing the
+function being hooked.
+
+% To make the result easier to read and understand, the loaded module are parsed
+% to get the exported symbols. When printing out the result, the module name with
+% the function name will be printed out.
+
+\subsection[Unloaded kernel drivers]{Unloaded kernel drivers}
+
+There are some cases where malware load and unload the kernel driver almost
+immediately (Rustock). In these scenarios, looking inside the unloaded driver
+list might shed some light on this type of malware. Windows stores a list of
+unloaded kernel drivers, the pointer to the list is located at
+\texttt{MmUnloadedDrivers}. The list contains at most 50 members sized 0x28
+bytes, the first 0x18 bytes in each member is of type
+\texttt{\_UNLOADED\_DRIVER}.  \texttt{\_UNLOADED\_DRIVER} only contains the
+name of the driver and the start and end address of the driver, the
+\texttt{\_DRIVER\_OBJECT}, in most cases, is deallocated. If lucky, pool tag
+scanning may show drivers unloaded, but it is usually not the case.

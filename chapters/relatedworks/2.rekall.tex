@@ -1,0 +1,13 @@
+\section[Rekall]{Rekall}
+
+Rekall open-source project by Google \cite{rekall} is the second choice in
+memory forensics.  Rekall is also written in Python 2 and provides almost the
+same functionalities that Volatility has. Rekall uses the debug symbols to
+resolve the structures layout and global variable offsets in Windows analysis.
+One withdrawal from Rekall is probably the installation, where Rekall is harder
+to install and use than Volatility.
+
+Rekall has a memory capture module called WinPmem, which is also a kernel
+driver for doing live forensics. On doing live memory forensics, WinPmem
+creates a device at \texttt{\textbackslash\textbackslash .\textbackslash pmem}
+and Rekall will perform the forensics on the device.
