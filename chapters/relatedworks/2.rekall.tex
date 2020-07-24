@@ -11,3 +11,9 @@ Rekall has a memory capture module called WinPmem, which is also a kernel
 driver for doing live forensics. On doing live memory forensics, WinPmem
 creates a device at \texttt{\textbackslash\textbackslash .\textbackslash pmem}
 and Rekall will perform the forensics on the device.
+
+Rekall performs live forensics by mapping every physical memory pages and binds
+the read operation to \texttt{\textbackslash\textbackslash .\textbackslash
+pmem} in \texttt{IRP\_MJ\_READ}. When the user application read the file at an
+offset, WinPmem driver will map the required physical page and copy to the
+output buffer.

@@ -62,33 +62,26 @@ brute-decoding \cite{kdbgEncoded}, one can still find the structure.
 
 \subsection[Pool tag scanning]{Pool tag scanning}
 
-As described in \ref{sec:pool}, each block has a pool header contains a
+As described in Section \ref{sec:pool}, each block has a pool header contains a
 four-byte tag. By scanning for a specific tag value that the OS uses to
-allocate for a kernel structure, we are able to search for all the object
-allocated, and sometimes de-allocated but not overwritten. Each tag-block
-matches should be furthur checked for validity, the pool body size (block size
-subtract the pool header size) should be bigger than the object holding (if the
-object is an executive object), or equal to the object.  Optional checks for
-pool type value are done with objects usually allocated in one pool section.
-E.g \texttt{\_EPROCESS} is always allocated inside the non-paged pool section,
-hence the pool type is 2.
-
-As described in \ref{sec:pool}, each block has a pool header contains a
-four-byte tag. By scanning for a specific tag value that the OS uses to
-allocate for a kernel structure, we can search for all the object
-allocated, and sometimes de-allocated but not overwritten. Each tag-block
-matches should be further checked for validity, the pool body size (block size
-subtract the pool header size) should be bigger than the object holding (if the
-object is an executive object), or equal to the object.  Optional checks for
-pool type value are done with objects usually allocated in one pool section.
-E.g., \texttt{\_EPROCESS} is always allocated inside the non-paged pool section,
-hence the pool type is 2.
+allocate for a kernel structure, we can search for all the object allocated,
+and sometimes de-allocated but not overwritten. Each tag-block matches should
+be further checked for validity, the pool body size (block size subtract the
+pool header size) should be bigger than the object holding (if the object is an
+executive object), or equal to the object.  Optional checks for pool type value
+are done with objects usually allocated in one pool section.  E.g.,
+\texttt{\_EPROCESS} is always allocated inside the non-paged pool section,
+hence the pool type is 2. This technique is called \textit{Pool tag scanning}
+\cite{pooltagscan}, and often done by a full search in the memory file. In
+2016, Sylve, Joe T and Marziale, Vico and Richard III, Golden G
+\cite{sylve2016pool} improved this technique by locating the range of the
+non-paged pool region and scan only the pages that are valid. They named the
+technique \textit{Pool tag quick scanning}.
 
 The pool tag quick scanning research is conducted on Windows Vista and 8, we
 extended the findings of these ranges on Windows XP, 7, 8, and 10 (all versions
 from 2015 to 2020), with reference from the Rekall project. The result can be
-found in Table \ref{tab:nonpaged}. The convention \texttt{nt!foo} is a
-shorthand for the address of \texttt{foo} in kernel space.
+found in Table \ref{tab:nonpaged}.
 
 \begin{table}[]
 \begin{tabular}{lll}
@@ -119,6 +112,8 @@ XP              & \texttt{nt!MmNonPagedPoolStart} & \texttt{nt!MmNonPagedPoolEnd
                 & \texttt{.NonPagedPoolFirstVa}
                 & \texttt{.NonPagedPoolLastVa} \\ \hline
 \end{tabular}
+  {\raggedright \texttt{nt!foo} is the address of \texttt{foo} in kernel space
+    \par}
   {\raggedright \texttt{nt!MiState} is a pointer to the type
   \texttt{\_MI\_SYSTEM\_INFORMATION}, this structure layout is different with
   each Windows 10 releases \par}
@@ -185,8 +180,7 @@ int32_t* KiServiceTable;
 int KiServiceLimit;
 void* ssdt[KiServiceLimit];
 for (int i = 0; i < KiServiceLimit; i++) {
-  ssdt[i] = (void*) ((int64_t)KiServiceTable
-                     + (KiServiceTable[i] >> 4));
+  ssdt[i] = (void*) ((int64_t)KiServiceTable + (KiServiceTable[i] >> 4));
 }
 \end{lstlisting}
 

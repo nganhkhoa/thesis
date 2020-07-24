@@ -2,5 +2,9 @@
 
 Memtriage \cite{memtriage} is a wrapper around the Rekall WinPmem driver and
 Volatility to do live forensics with Volatility.  This project can make
-Volatility works on live systems with limitations. There have been crashes
-reported on some Windows versions.
+Volatility works on live systems. There have been crashes reported on some
+Windows versions.  Memtriage uses the WinPmem driver, so the protocol is the
+same as Rekall when performing live forensics. Memtriage is a Volatility fork,
+but the Volatility history tree is missing, in orther words, update from
+Volatility is not directly picked up by Memtriage. Memtriage will likely miss
+updates from the Volatility project.

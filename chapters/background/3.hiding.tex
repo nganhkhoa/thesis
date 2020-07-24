@@ -61,7 +61,8 @@ done.
 DKOM is short for Direct Kernel Object Manipulation. It is when a malware
 rewrites the kernel object members. One of the most used tricks related to DKOM
 is removing object(s) from the linked list of the object, as shown in Figure
-\ref{fig:dkom}.
+\ref{fig:dkom}. The removed object is not freed, and continue running inside
+the memory.
 
 \begin{figure}[h]
   \centering
@@ -79,8 +80,8 @@ naive malware will remove itself from the \texttt{in load} list, but a
 comparison with the other two lists can reveal the hidden module. A better
 hiding malware will try to remove itself from these three lists.
 
-If the malware wants to hide one of its threads, it can remove the thread from
-the threads list, the pointer to the thread list is \texttt{ThreadListHead} in
+If the malware wants to hide one of its threads, it removes the thread from the
+threads list, the pointer to the thread list is \texttt{ThreadListHead} in
 \texttt{\_EPROCESS}.
 
 Removing a node from the linked list is a common task, but DKOM is not limited
@@ -89,4 +90,5 @@ research\cite{robussignature} made by Brendan on Windows XP reveals that of the
 72 selective members from selective structures, 29 members can be modified
 without affecting, crashing, the system.  However, this research needs to be
 updated with Windows 10. From the research results, malware can edit many
-members, some of which could hide from the system without breaking the system.
+members, some of which will make them hidden from the system without breaking
+the system.

@@ -36,12 +36,12 @@ in the Windows operating system.
 
 \subsubsection[EPROCESS]{EPROCESS}
 
-\texttt{\_EPROCESS} is a structure to manage the running process. This
-structure contains the process id, the parent process id, the memory map for
-the process, the process environment block, the pointer to list of loaded
-modules, the pointer to list of threads created by the process and other
-information related to the process.  This structure is also a node in a
-circular doubly linked list of processes.
+\texttt{\_EPROCESS}, Listing \ref{lst:eprocess}, is a structure to manage the
+running process. This structure contains the process id, the parent process id,
+the memory map for the process, the process environment block, the pointer to
+list of loaded modules, the pointer to list of threads created by the process
+and other information related to the process.  This structure is also a node in
+a circular doubly linked list of processes.
 
 The memory map is the list of sections inside a process address space, and
 these are code, data, heap, libraries. It is represented as a self-balancing
@@ -50,13 +50,15 @@ tree where each node contains the address, size, and operations
 \textit{Vad tree}, and the root of the tree is the \texttt{VadRoot} member in
 \texttt{\_EPROCESS}.
 
-The process environment block contains the information to the process, such as
-the image base address, the heap pointer. This block resides in the user space
-memory, so the kernel process can not read this information. However, the
-pointer to the address of the block is the \texttt{PEB} member, and if we map
-this address into the kernel space, we can access this information.
+The process environment block (PEB), Listing \ref{lst:peb}, contains the
+information to the process, such as the image base address, the heap pointer.
+This block resides in the user space memory, so the kernel process can not read
+this information without mapping the user space into the kernel space. The
+pointer to the address of the block is the \texttt{PEB} member of
+\texttt{\_EPROCESS} and we can map the page containing the PEB to read the
+process information.
 
-\begin{lstlisting}[language=windbg,caption=\texttt{\_EPROCESS} in Windows 7,float,floatplacement=H]
+\begin{lstlisting}[language=windbg,lable={lst:eprocess},caption=\texttt{\_EPROCESS} in Windows 7,float,floatplacement=H]
 kd> dt _EPROCESS
 nt!_EPROCESS
    +0x168 CreateTime       : _LARGE_INTEGER
@@ -73,7 +75,7 @@ nt!_EPROCESS
    +0x448 VadRoot          : _MM_AVL_TABLE
 \end{lstlisting}
 
-\begin{lstlisting}[language=windbg,caption=\texttt{\_PEB} in Windows 7,float,floatplacement=H]
+\begin{lstlisting}[language=windbg,label={lst:peb},caption=\texttt{\_PEB} in Windows 7,float,floatplacement=H]
 kd> dt _PEB
 nt!_PEB
    +0x002 BeingDebugged    : UChar
@@ -98,16 +100,16 @@ nt!_PEB
 
 \subsubsection[ETHREAD]{ETHREAD}
 
-\texttt{\_ETHREAD} is a structure used to manage threads. This structure
-contains the process id, the thread id, the pointer to the owner
-\texttt{\_EPROCESS}, current thread state, threads flags. This structure is
-also a node in a circular doubly linked list of threads. The status of the
-thread can tell whether the thread is initilized, ready, running, or waiting.
-The thread waiting reason can also be found in this structure. Thread's flags
-indicate the thread to be terminated, dead, hided from debugger, impersonating,
-a system thread.
+\texttt{\_ETHREAD}, Listing \ref{lst:ethread}, is a structure used to manage
+threads. This structure contains the process id, the thread id, the pointer to
+the owner \texttt{\_EPROCESS}, the current thread state, threads flags. This
+structure is also a node in a circular doubly linked list of threads. The
+status of the thread can tell whether the thread is initilized, ready, running,
+or waiting.  The thread waiting reason can also be found in this structure.
+Thread's flags indicate the thread to be terminated, dead, hided from debugger,
+impersonating, a system thread.
 
-\begin{lstlisting}[language=windbg,caption=\texttt{\_ETHREAD} in Windows 7,float,floatplacement=H]
+\begin{lstlisting}[language=windbg,label={lst:ethread},caption=\texttt{\_ETHREAD} in Windows 7,float,floatplacement=H]
 kd> dt _ETHREAD
 nt!_ETHREAD
    +0x000 Tcb              : _KTHREAD
@@ -129,9 +131,10 @@ nt!_ETHREAD
 
 \textit{Mutant} is the way Windows name \textit{mutex}, a lock to prevent
 multiple threads accessing the same time, and represented using a
-\texttt{\_KMUTANT}.  A mutant has a pointer to the thread owning the mutant.
+\texttt{\_KMUTANT}, Listing \ref{lst:kmutant}.  \texttt{\_KMUTANT} has a
+pointer to the thread owning the mutant.
 
-\begin{lstlisting}[language=windbg,caption=\texttt{\_KMUTANT} in Windows 7,float,floatplacement=H]
+\begin{lstlisting}[language=windbg,label={lst:kmutant},caption=\texttt{\_KMUTANT} in Windows 7,float,floatplacement=H]
 kd> dt _KMUTANT
 nt!_KMUTANT
    +0x018 MutantListEntry  : _LIST_ENTRY
@@ -141,11 +144,19 @@ nt!_KMUTANT
 \subsubsection[DRIVER\_OBJECT]{DRIVER\_OBJECT}
 
 Every driver loaded and running will be represented with a type of
-\texttt{\_DRIVER\_OBJECT}.  This structure contains a pointer to the underlying
-device and functions related to this driver. Functions related to the driver
-are \textit{init}, \textit{unload} and 28 major functions.
+\texttt{\_DRIVER\_OBJECT}, Listing \ref{lst:driverobj}.  This structure
+contains a pointer to the underlying device and functions related to this
+driver. Functions related to the driver are \textit{init}, \textit{unload} and
+28 major functions. 28 major functions are functions for interacting with the
+system. These functions by default point to the kernel functions, but the
+driver can register these function to the desired function. E.g, the fourth
+function \texttt{IRP\_MJ\_READ} will be called when the user application calls
+\texttt{ReadFile} or a kernel-mode driver calls \texttt{ZwReadFile}, by default
+it is pointed to a routine which indicate \textit{not supported}, but the
+driver can overwrite this to the desired function, as in Listing
+\ref{lst:majorfunc}.
 
-\begin{lstlisting}[language=windbg,caption=\texttt{\_DRIVER\_OBJECT} in Windows 7,float,floatplacement=H]
+\begin{lstlisting}[language=windbg,label={lst:driverobj},caption=\texttt{\_DRIVER\_OBJECT} in Windows 7,float,floatplacement=H]
 kd> dt _DRIVER_OBJECT
 nt!_DRIVER_OBJECT
    +0x000 Type             : Int2B
@@ -164,20 +175,31 @@ nt!_DRIVER_OBJECT
    +0x070 MajorFunction    : [28] Ptr64     long
 \end{lstlisting}
 
+\begin{lstlisting}[language=cpp,label={lst:majorfunc},caption=\texttt{Seting MajorFunction} in kernel-mode driver,float,floatplacement=H]
+void MyReadFunction(PDEVICE_OBJECT DriverObject, PIRP Irp) {
+}
+
+void DriverEntry(PDEVICE_OBJECT DriverObject, PUNICODE_STRING /* RegistryPath */) {
+  DriverObject->MajorFunction[IRP_MJ_READ] = MyReadFunction;
+}
+\end{lstlisting}
+
 \subsection[Other kernel structures]{Other kernel structures}
 
 \subsubsection[LDR\_DATA\_TABLE\_ENTRY]{LDR\_DATA\_TABLE\_ENTRY}
 
 Windows tracks \textit{modules}, dynamically loaded library, loaded in each
-process by a structure called \texttt{\_LDR\_DATA\_TABLE\_ENTRY}, this
-structure is a node in three different circular linked lists, \textit{in load}
-list, \textit{in memory} list, and \textit{in initilization} list. This
-structure contains the base address, the entry point address, the size, the
-name of the module, and the number of processes loaded. The kernel module is
-tracked using \texttt{\_KLDR\_DATA\_TABLE\_ENTRY}, which has some small
-differences, but the layout is almost the same.
+process by a structure called \texttt{\_LDR\_DATA\_TABLE\_ENTRY}, Listing
+\ref{lst:ldr}, this structure is a node in three different circular linked
+lists, \textit{in load} list, \textit{in memory} list, and \textit{in
+  initilization} list. This structure contains the module's base address, the
+pointer to the module's entry function, the module size, the module's name, and
+the number of processes loaded this module. The kernel module is tracked using
+\texttt{\_KLDR\_DATA\_TABLE\_ENTRY}, which has some small differences, but the
+layout is almost the same. \texttt{\_KLDR\_DATA\_TABLE\_ENTRY} definition is
+not publicly provided until Windows 10.
 
-\begin{lstlisting}[language=windbg,caption=\texttt{\_LDR\_DATA\_TABLE\_ENTRY} in Windows 7,float,floatplacement=H]
+\begin{lstlisting}[language=windbg,label={lst:ldr},caption=\texttt{\_LDR\_DATA\_TABLE\_ENTRY} in Windows 7,float,floatplacement=H]
 kd> dt _LDR_DATA_TABLE_ENTRY
 nt!_LDR_DATA_TABLE_ENTRY
    +0x000 InLoadOrderLinks : _LIST_ENTRY
@@ -197,17 +219,17 @@ nt!_LDR_DATA_TABLE_ENTRY
 The kernel pool is the way Windows named the kernel heap for dynamic memory
 allocation. There are many pools, each with different types, and the system
 memory space has specific ranges for these pools. However, there are two main
-types of pool, the paged pool, and non-paged pool. The paged pool can be paged
-out to disk while the non-paged pool is always in memory. The non-paged pool is
-mostly used for system structures where the allocation must always be in memory
-for fast accessing. Allocation in a pool has a pool header data prepended.  The
-pool header, of type \texttt{\_POOL\_HEADER}, contains the size of the
+types of pool, the \textit{paged pool}, and \textit{non-paged pool}. The paged
+pool can be paged out to disk while the non-paged pool is always in memory for
+every valid page. The non-paged pool is mostly used to allocate system
+structures because they must always be in memory for critical access.  We call
+the allocation inside a pool a \textbf{block}. A block has a header of type
+\texttt{\_POOL\_HEADER} and the data. The pool header contains the size of the
 allocation, the size of the previous allocation, the type of the pool
-allocated, and a four-byte tag. For convenience, we call an allocation a
-\textbf{block}.  The size in the header is a multiplier of 16 in 64-bit
-systems.  The type of pool is an enumeration, and it should match the pool type
-where the block was allocated. The four-byte tag is a value provided when
-allocate the block using legacy Windows API such as
+allocated, and a four-byte tag. The size in the header is a multiplier of 16 in
+64-bit systems.  The type of pool is an enumeration, and it should match the
+pool type where the block was allocated.  The four-byte tag is a value provided
+when allocate the block using legacy Windows API such as
 \texttt{ExAllocatePoolWithTag}. In Figure \ref{fig:pooltag}, we can see how the
 pool allocation works.
 
@@ -219,11 +241,11 @@ pool allocation works.
 \end{figure}
 
 The pool that is relevant to the kernel data is called the non-paged pool. This
-pool's pages are never paged out to disk and contain many executive objects.
-The header of blocks allocated inside this pool will have the type value equal
-to 2. Kernel objects are allocated inside this pool with a tag hard-coded
-inside the kernel code. Their tags and the structure are described in the Table
-\ref{tab:pooltag}.
+pool's pages are never paged out to disk and contain many kernel objects.  The
+header of blocks allocated inside this pool will have the type value equal to
+2. Kernel objects are allocated inside this pool with a tag hard-coded inside
+the Windows source-code. Their tags and the structure are described in the
+Table \ref{tab:pooltag}.
 
 \begin{lstlisting}[language=windbg,caption=\texttt{\_POOL\_HEADER} in Windows 64-bit,float,floatplacement=H]
 kd> dt _POOL_HEADER
@@ -249,7 +271,7 @@ pointer to \texttt{\_EPROCESS}. Kernel modules are also stored inside the
 
 The Windows source code is not publicly available, however Windows distributes
 debug symbols for researching purposes. These debug symbols contains the offset
-to global variables, functions and structure layout. The symbols are compressed
+to global variables, functions and structures layout. The symbols are compressed
 into a file called program database, or \textit{PDB}, with the extension
 \texttt{.pdb}. The instruction to extract the file is limited described
 \cite{microsoft-pdb}, but public works have been done and parsers are
